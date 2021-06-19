@@ -8,9 +8,8 @@ target_sources(${TARGET}
 )
 
 target_include_directories(${TARGET} PUBLIC ${HEADER_LIST})
-#target_link_libraries(${TARGET} PRIVATE fmt cpr::cpr)
-#target_link_libraries(${TARGET} PRIVATE fmt)
-target_link_libraries(${TARGET} PRIVATE fmt cpr)
+#target_link_libraries(${TARGET} PRIVATE fmt cpr)
+target_link_libraries(${TARGET} PRIVATE fmt httplib)
 target_compile_features(${TARGET} PUBLIC cxx_std_20)
 
 source_group(

@@ -32,11 +32,16 @@ FetchContent_Declare(
     GIT_REPOSITORY "https://github.com/fmtlib/fmt")
 FetchContent_MakeAvailable(libfmt)
 
-FetchContent_Declare(cpr 
-    GIT_REPOSITORY https://github.com/whoshuu/cpr.git 
-    #GIT_TAG c8d33915dbd88ad6c92b258869b03aba06587ff9) # the commit hash for 1.5.0
+#FetchContent_Declare(cpr 
+    #GIT_REPOSITORY https://github.com/whoshuu/cpr.git 
+    ##GIT_TAG c8d33915dbd88ad6c92b258869b03aba06587ff9) # the commit hash for 1.5.0
+    #)
+#FetchContent_MakeAvailable(cpr)
+
+FetchContent_Declare(httplib
+    GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
     )
-FetchContent_MakeAvailable(cpr)
+FetchContent_MakeAvailable(httplib)
 
 if (BUILD_TESTING)
 include(ExternalProject)
