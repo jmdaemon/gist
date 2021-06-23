@@ -1,23 +1,13 @@
-//#define CPPHTTPLIB_OPENSSL_SUPPORT
-#include <iostream>
+//#include <iostream>
+#include <string>
 #include <cstdlib> /* getenv */
 
-#include <string>
+#include <asio.hpp>
 #include <fmt/core.h>
 
-//#include <cpr/cpr.h>
 #include "httplib.h"
 
 int main(int argc, char** argv) { 
-  //cpr::Response r = cpr::Get(cpr::Url{"https://api.github.com/"});
-
-  ////fmt::print("Request URL           : {}\n", r.url);
-  //std::cout<<"Request URL           : " << r.url << std::endl;
-  //fmt::print("Request Status Code   : {}\n", r.status_code);                  // 200 
-  //fmt::print("Request Content Type  : {}\n", r.header["content-type"]);       // application/json; charset=utf-8 
-  //fmt::print("Request Text          : {}\n", r.text);                         // JSON text string
-
-
 
   const char* GIST_FILE_PATH = std::getenv("GIST_CONFIG_HOME");
   if (GIST_FILE_PATH) {

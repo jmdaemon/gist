@@ -26,17 +26,15 @@ set( GIST_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
 set( GIST_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} )
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake/modules/" "${PROJECT_SOURCE_DIR}/cmake" )
 
+# Dependencies: fmt, Cap'n'Proto, httplib, PkgConfig, standalone asio, doctest
 include(FetchContent)
 FetchContent_Declare(
     libfmt
     GIT_REPOSITORY "https://github.com/fmtlib/fmt")
 FetchContent_MakeAvailable(libfmt)
 
-#FetchContent_Declare(cpr 
-    #GIT_REPOSITORY https://github.com/whoshuu/cpr.git 
-    ##GIT_TAG c8d33915dbd88ad6c92b258869b03aba06587ff9) # the commit hash for 1.5.0
-    #)
-#FetchContent_MakeAvailable(cpr)
+find_package(PkgConfig REQUIRED)
+find_package(CapnProto CONFIG REQUIRED)
 
 FetchContent_Declare(httplib
     GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
