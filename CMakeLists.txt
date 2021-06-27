@@ -26,15 +26,15 @@ set( GIST_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
 set( GIST_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} )
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake/modules/" "${PROJECT_SOURCE_DIR}/cmake" )
 
-# Dependencies: fmt, Cap'n'Proto, httplib, PkgConfig, standalone asio, doctest, tomlplusplus
+# Project Dependencies  : fmt, httplib, tomlplusplus
+# Optional Dependencies : doctest (unit testing), Cap'n'Proto, PkgConfig, standalone asio (installed via package manager)
 include(FetchContent)
-FetchContent_Declare(
-    libfmt
+FetchContent_Declare(libfmt
     GIT_REPOSITORY "https://github.com/fmtlib/fmt")
 FetchContent_MakeAvailable(libfmt)
 
-find_package(PkgConfig REQUIRED)
-find_package(CapnProto CONFIG REQUIRED)
+#find_package(PkgConfig REQUIRED)
+#find_package(CapnProto CONFIG REQUIRED)
 
 FetchContent_Declare(httplib
     GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
@@ -46,6 +46,19 @@ FetchContent_Declare(tomlplusplus
     GIT_TAG        v2.4.0
 )
 FetchContent_MakeAvailable(tomlplusplus)
+
+FetchContent_Declare(json
+  #GIT_REPOSITORY https://github.com/nlohmann/json.git 
+  GIT_REPOSITORY https://github.com/ArthurSonzogni/nlohmann_json_cmake_fetchcontent.git
+  #GIT_TAG v3.7.3)
+  GIT_TAG v3.9.1)
+
+FetchContent_GetProperties(json)
+if(NOT json_POPULATED)
+  FetchContent_Populate(json)
+  add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
+
 
 if (BUILD_TESTING)
 include(ExternalProject)

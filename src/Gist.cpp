@@ -5,6 +5,9 @@
 #include <toml++/toml.h>
 #include <fmt/core.h>
 #include "httplib.h"
+#include <nlohmann/json.hpp>
+
+using nlohmann::json;
 
 //void asioPrint() { 
   // asio
@@ -34,5 +37,12 @@ int main(int argc, char** argv) {
   auto res = cli.Get("/gists", headers);
   fmt::print("Response Status : {}\n", res->status);
   fmt::print("Response Body   : {}\n", res->body);
+
+  json j = json::parse(res->body);
+  fmt::print("\n\nPretty Print JSON Reponse\n{}\n\n", j.dump(8)); 
+  //fmt::print("{}", j["files"]["aur-list.pkg"]);
+  //for (auto& [value] : j.items()["files"]["aur-list.pkg"]) {
+    //fmt::print("Files: {}\n", value);
+//}
   return 0; 
 }
