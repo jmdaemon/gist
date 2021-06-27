@@ -26,7 +26,7 @@ set( GIST_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
 set( GIST_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} )
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake/modules/" "${PROJECT_SOURCE_DIR}/cmake" )
 
-# Dependencies: fmt, Cap'n'Proto, httplib, PkgConfig, standalone asio, doctest
+# Dependencies: fmt, Cap'n'Proto, httplib, PkgConfig, standalone asio, doctest, tomlplusplus
 include(FetchContent)
 FetchContent_Declare(
     libfmt
@@ -40,6 +40,12 @@ FetchContent_Declare(httplib
     GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
     )
 FetchContent_MakeAvailable(httplib)
+
+FetchContent_Declare(tomlplusplus
+    GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git
+    GIT_TAG        v2.4.0
+)
+FetchContent_MakeAvailable(tomlplusplus)
 
 if (BUILD_TESTING)
 include(ExternalProject)
