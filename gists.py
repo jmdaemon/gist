@@ -101,11 +101,28 @@ config = ".config/gist/config.toml"
 # print(f"Gist: {gist_name} Created!")
 
 # == Get User Gists ==
+res             = send_get(url, read_file(config))
+json_res        = json.loads(res.text)
+gist_names = [ 'aur-list.pkg', 'pacman-list.pkg' ]
 
-json_response   = send_get(url, read_file(config)).json()
-aur_list_pkgs   = json_response[0]['files']['aur-list.pkg']['raw_url']
-arch_list_pkgs  = json_response[1]['files']['pacman-list.pkg']['raw_url']
-print(f"Aur    Raw: {aur_list_pkgs} ")
-print(f"Pacman Raw: {arch_list_pkgs}")
-# list_packages((send_get(aur_list_pkgs, token)), "Aur")
-# list_packages((send_get(arch_list_pkgs, token)), "Arch")
+# for gist in enumerate(json_res):
+    # print(gist)
+    # if (json_res[gist]['files'][aur_fname]['raw_url']):
+        # print(f"Found {aur_fname}")
+    # elif (json_res[gist]['files'][arch_fname]['raw_url']):
+        # print(f"Found {arch_fname}")
+
+# print(json_res)
+pretty_print(res, display_json=True)
+
+# index = 0
+# for gist in range(0, len(json_res)):
+    # # print(f"{json_res[gist]}\n")
+    # # print(f"{json_res[gist]['files']}\n")
+    # print(f"{json_res[gist]['files'][gist_names[index]]['raw_url']}\n")
+    # index += 1
+
+raw_urls = [json_res[gist]['files'][gist_names[gist]]['raw_url'] for gist in range(0, len(json_res))]
+print(raw_urls)
+print(f"Aur    Raw: {raw_urls[0]} ")
+print(f"Pacman Raw: {raw_urls[1]}")
