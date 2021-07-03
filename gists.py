@@ -112,8 +112,17 @@ for file in range(0, len(json_res)):
     for filename in range(0, len(gist_names)):
         if key == gist_names[filename]:
             raw_urls.append(json_res[file]['files'][key]['raw_url'])
-            # raw_urls[gist_names[filename]] = json_res[file]['files'][key]['raw_url']
-print(raw_urls)
 
-# print(f"Aur    Raw: {raw_urls[0]} ")
-# print(f"Pacman Raw: {raw_urls[1]}")
+print("\nRaw Urls:")
+for url in raw_urls:
+    print(url)
+
+gist_dict_keys = ["AUR", "Arch"]
+
+raw_urls_dict = {}
+for url in range(0, len(raw_urls)):
+    raw_urls_dict[gist_dict_keys[url]] = raw_urls[url]
+
+print("\nRaw Urls Dict:")
+for key, url in raw_urls_dict.items():
+    print(f'Key: {key}\t\t\tValue: {url}')
