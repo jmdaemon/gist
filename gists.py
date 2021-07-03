@@ -84,7 +84,6 @@ class Gist():
         res = send_get(self.url, self.token)
         return res
 
-
 url = "https://api.github.com/gists"
 config = ".config/gist/config.toml"
 
@@ -97,32 +96,24 @@ config = ".config/gist/config.toml"
 # aur_gist    = Gist(url, config, gist_name, desc, public)
 
 # res = aur_gist.create_gist(local_name, contents)
+# print(f"Gist: {gist_name} Created")
 # pretty_print(res, display_json=True)
-# print(f"Gist: {gist_name} Created!")
 
 # == Get User Gists ==
 res             = send_get(url, read_file(config))
 json_res        = json.loads(res.text)
-gist_names = [ 'aur-list.pkg', 'pacman-list.pkg' ]
+gist_names      = [ 'aur-list.pkg', 'pacman-list.pkg' ]
+print(f"Retrieved User Gists")
+# pretty_print(res, display_json=True)
 
-# for gist in enumerate(json_res):
-    # print(gist)
-    # if (json_res[gist]['files'][aur_fname]['raw_url']):
-        # print(f"Found {aur_fname}")
-    # elif (json_res[gist]['files'][arch_fname]['raw_url']):
-        # print(f"Found {arch_fname}")
-
-# print(json_res)
-pretty_print(res, display_json=True)
-
-# index = 0
-# for gist in range(0, len(json_res)):
-    # # print(f"{json_res[gist]}\n")
-    # # print(f"{json_res[gist]['files']}\n")
-    # print(f"{json_res[gist]['files'][gist_names[index]]['raw_url']}\n")
-    # index += 1
-
-raw_urls = [json_res[gist]['files'][gist_names[gist]]['raw_url'] for gist in range(0, len(json_res))]
+raw_urls = []
+for file in range(0, len(json_res)):
+    key = (next(iter(json_res[file]['files'])))
+    for filename in range(0, len(gist_names)):
+        if key == gist_names[filename]:
+            raw_urls.append(json_res[file]['files'][key]['raw_url'])
+            # raw_urls[gist_names[filename]] = json_res[file]['files'][key]['raw_url']
 print(raw_urls)
-print(f"Aur    Raw: {raw_urls[0]} ")
-print(f"Pacman Raw: {raw_urls[1]}")
+
+# print(f"Aur    Raw: {raw_urls[0]} ")
+# print(f"Pacman Raw: {raw_urls[1]}")
