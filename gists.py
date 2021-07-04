@@ -35,42 +35,29 @@ def read_file(filename):
     finally:
         file.close()
 
-def create_json(local_name, gist_name, desc, contents, public=False):
+def create_json(gist_name, desc, contents, public=False):
     data = { 'description': desc, 'public': public }
     data['files'] = {}
     data['files'][gist_name] = { 'content': contents }
     result = json.dumps(data)
-    print(result)
     return result
-    # with open(local_name, 'w') as output:
-        # json.dump(data, output)
 
 # Request
 def create_header():
-    header = { 'Accept': 'application/vnd.github.v3+json' }
-    return header
+    return { 'Accept': 'application/vnd.github.v3+json' }
 
 def send_get(url, token):
-    r   = requests.get(url, allow_redirects=True, headers=create_header(),
+    return requests.get(url, allow_redirects=True, headers=create_header(),
                         auth=('Authentication', token))
-    return r
 
-def send_post(url, token, filename):
-    contents = open(filename, 'rb').read()
-    r   = requests.post(url, allow_redirects=True, headers=create_header(),
+def send_post(url, token, contents):
+    return requests.post(url, allow_redirects=True, headers=create_header(),
                         auth=('Authentication', token),
                         data=contents)
-    return r
 
-# def send_patch(url, token, filename):
-    # contents = open(filename, 'rb').read()
-# def send_patch(url, token, filename):
 def send_patch(url, token, contents):
-    # contents = open(filename, 'rb').read()
-    r   = requests.patch(url, allow_redirects=True, headers=create_header(),
-                        auth=('Authentication', token),
-                        data=contents)
-    return r
+    return requests.patch(url, allow_redirects=True, headers=create_header(),
+                        auth=('Authentication', token), data=contents)
 
 # Gist
 class Gist():
@@ -85,14 +72,12 @@ class Gist():
     def list_gists(self, display_json):
         pretty_print(get_gists(self), display_json)
 
-    def create_gist(self, local_name, contents):
-        create_json(local_name, self.gist_name, self.desc, contents, self.public)
-        res = send_post(self.url, self.token, local_name)
-        return res
+    def create_gist(self, contents):
+        json_file = create_json(self.gist_name, self.desc, contents, self.public)
+        return send_post(self.url, self.token, json_file)
 
     def get_gists(self):
-        res = send_get(self.url, self.token)
-        return res
+        return send_get(self.url, self.token)
 
     # def update_gist(self, url=self.url, config=self.config, local_name=self.local_name,
                     # gist_name=self.gist_name, desc=self.desc, public=self.public, contents):
@@ -104,16 +89,15 @@ url = "https://api.github.com/gists"
 config = ".config/gist/config.toml"
 
 # == Create User Gists ==
-# local_name  = "TestFile2.json"
-# gist_name   = "TestFile2"
-# desc        = "Creating a test file via GitHub Gist API"
-# contents    = "This is a test file."
-# public      = False
-# aur_gist    = Gist(url, config, gist_name, desc, public)
+gist_name   = "TestFile2"
+desc        = "Creating a test file via GitHub Gist API"
+contents    = "This is a test file."
+public      = False
+aur_gist    = Gist(url, config, gist_name, desc, public)
 
-# res = aur_gist.create_gist(local_name, contents)
-# print(f"Gist: {gist_name} Created")
-# pretty_print(res, display_json=True)
+res = aur_gist.create_gist(contents)
+print(f"Gist: {gist_name} Created")
+pretty_print(res, display_json=True)
 
 # == Get User Gists ==
 # res             = send_get(url, read_file(config))
@@ -157,8 +141,7 @@ for file in range(0, len(json_res)):
             ids.append(json_res[file]['id'])
             print(idx)
 
-local_name  = "TestFile3.json"
-gist_name   = "TestFile3"
+gist_name   = "TestFile2"
 desc        = "Updating a test file via GitHub Gist API"
 contents    = "This is an updated test file."
 public      = False
@@ -166,5 +149,5 @@ public      = False
 url = f'{url}/{ids[0]}'
 print(url)
 token = read_file(config)
-json_file = create_json(local_name, gist_name, desc, contents, public)
+json_file = create_json(gist_name, desc, contents, public)
 print_response(send_patch(url, token, json_file))
