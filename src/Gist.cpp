@@ -45,10 +45,18 @@ int main(int argc, char** argv) {
 
   RestClient::HeaderFields headers;
   headers["Accept"] = "application/vnd.github.v3+json";
-  headers["Authorization"] = *token;
+  headers["Authorization"] = "token " + *token;
   conn->SetHeaders(headers);
 
   RestClient::Response r = conn->get("/gists");
+  printResponse(r);
+
+  json o;
+  o["description"]                      = "Example json file for use in GitHub REST API";
+  o["public"]                           = true;
+  o["files"]["Testfile.txt"]["content"] = "This is a test file.";
+  std::string contents = o.dump();
+  r = conn->post("/gists", contents);
   printResponse(r);
   
   RestClient::disable();
