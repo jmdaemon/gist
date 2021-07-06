@@ -10,6 +10,8 @@
 #include "restclient-cpp/connection.h"
 #include "restclient-cpp/restclient.h"
 
+#include "InputParser.h"
+
 using nlohmann::json;
 
 //void asioPrint() { 
@@ -42,7 +44,8 @@ auto createHeaders(std::optional<std::string> token) {
 
 std::string getRaw(json o, std::string filter) {
   for (int i=0; i < o.size(); i++) { 
-    for (auto& gist : o[i]["files"]) {
+    for (auto& gist : o[i]["files"]) { 
+      std::cout << gist["filename"] << std::endl;
       if (gist["filename"] == filter) {
         return gist["raw_url"];
       }
@@ -53,7 +56,8 @@ std::string getRaw(json o, std::string filter) {
 
 std::string getId(json o, std::string filter) {
   for (int i=0; i < o.size(); i++) { 
-    for (auto& gist : o[i]["files"]) {
+    for (auto& gist : o[i]["files"]) { 
+      std::cout << gist["filename"] << std::endl;
       if (gist["filename"] == filter) {
         return o[i]["id"];
       }
@@ -62,48 +66,60 @@ std::string getId(json o, std::string filter) {
   return  "";
 }
 
+void showUsage() {
+  fmt::print("Show Program Usage\n");
+}
+
 auto getGists(RestClient::Connection* conn) { return conn->get("/gists"); }
 auto createGist(RestClient::Connection* conn, std::string contents) { return conn->post("/gists", contents); }
 auto updateGist(RestClient::Connection* conn, std::string gistID, std::string contents) { return conn->patch("/gists/" + gistID, contents); }
 
-int main(int argc, char** argv) { 
+int main(int argc, char** argv) {
+  InputParser input(argc, argv);
+  if (input.argExists("-h") || input.argExists("--help")) {
+    showUsage();
+    return 0;
+  } 
 
-  // Check if GIST_CONFIG_HOME env var is defined
-  const char* GIST_FILE_PATH = std::getenv("GIST_CONFIG_HOME");
-  if (GIST_FILE_PATH) {
-    std::string GIST_CONFIG_HOME(GIST_FILE_PATH);
-    fmt::print("$GIST_CONFIG_HOME: {}\n", GIST_CONFIG_HOME);
-  }
+  std::string GIST_CONFIG = (std::getenv("GIST_CONFIG_HOME")) 
+    ? std::string(std::getenv("GIST_CONFIG_HOME")) : std::string(std::getenv("HOME")) + "/.config/gist/config.toml"; 
+
+  GIST_CONFIG = (input.argExists("--config")) ? input.getArg("--config") : GIST_CONFIG;
 
   // Parse auth token
-  auto config = toml::parse_file( std::string(std::getenv("HOME")) + "/.config/gist/config.toml" );
+  auto config = toml::parse_file(GIST_CONFIG);
   std::optional<std::string> token = config["user"]["token"].value<std::string>();
-
   const std::string url = "https://api.github.com";
 
   RestClient::init();
   RestClient::Connection* conn = new RestClient::Connection(url);
   conn->FollowRedirects(true);
-  conn->SetHeaders(createHeaders(token));
+  conn->SetHeaders(createHeaders(token)); 
 
-  std::string contents = createJson("Example json file for use in GitHub REST API", "TestFile.txt", "This is a test file.");
-  RestClient::Response r = getGists(conn);
-  //printResponse(r);
-  
-  auto o = json::parse(r.body);
+  std::string contents = "";
+  if (input.argExists("-l")) { // List user gists
+    contents = createJson("Example json file for use in GitHub REST API", "TestFile.txt", "This is a test file.");
+    printResponse(getGists(conn));
+  } else if (input.argExists("-c")) { // Create new gist for user
+    contents = createJson("Example json file for use in GitHub REST API", "TestFile.txt", "This is a test file.");
+    printResponse(createGist(conn, contents));
+  } else if (input.argExists("-u")) { // Update existing gist for user
+    RestClient::Response r = getGists(conn);
+    auto o = json::parse(r.body);
 
-  fmt::print("Aur   URL : {}\n", getRaw(o, "aur-list.pkg"));
-  fmt::print("Arch  URL : {}\n", getRaw(o, "pacman-list.pkg"));
-  fmt::print("Aur   ID  : {}\n", getId(o, "aur-list.pkg"));
-  fmt::print("Arch  ID  : {}\n", getId(o, "pacman-list.pkg"));
+    fmt::print("Aur   URL : {}\n", getRaw(o, "aur-list.pkg"));
+    fmt::print("Arch  URL : {}\n", getRaw(o, "pacman-list.pkg"));
+    fmt::print("Aur   ID  : {}\n", getId(o, "aur-list.pkg"));
+    fmt::print("Arch  ID  : {}\n", getId(o, "pacman-list.pkg"));
 
-  std::string gistID = getId(o, "TestFile.txt");
-  std::string gistURL = getRaw(o, "TestFile.txt");
-  fmt::print("Test  URL : {}\n", gistURL);
-  fmt::print("Test  ID  : {}\n", gistID); 
-  contents = createJson("Updated json file for GitHub Gists", "TestFile.txt", "This is an updated test file.");
-  printResponse(updateGist(conn, gistID, contents));
-  
+    std::string gistID = getId(o, "TestFile.txt");
+    std::string gistURL = getRaw(o, "TestFile.txt");
+    fmt::print("Test  URL : {}\n", gistURL);
+    fmt::print("Test  ID  : {}\n", gistID); 
+    contents = createJson("Updated json file for GitHub Gists", "TestFile.txt", "This is an updated test file.");
+    printResponse(updateGist(conn, gistID, contents));
+  }
+
   RestClient::disable();
   return 0; 
 }
