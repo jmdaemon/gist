@@ -1,5 +1,5 @@
 {
-  "description": "Creating a test file via GitHub Gist API",
+  "description": "Example json file for use in GitHub REST API",
   "public": true,
   "files": {
     "TestFile.txt": {
