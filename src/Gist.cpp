@@ -2,10 +2,12 @@
 #include <cstdlib> /* getenv */
 
 // Libraries
-#include <toml++/toml.h>
 #include <fmt/core.h>
-#include "httplib.h"
+#include <toml++/toml.h>
 #include <nlohmann/json.hpp>
+
+#include "restclient-cpp/connection.h"
+#include "restclient-cpp/restclient.h"
 
 using nlohmann::json;
 
@@ -17,32 +19,38 @@ using nlohmann::json;
   //fmt::print("Hello, world!\n");
 //}
 
+void printResponse(RestClient::Response res) {
+  fmt::print("Response Code     : {}\n", res.code);
+  fmt::print("Response Body     : {}\n", res.body);
+}
+
 int main(int argc, char** argv) { 
 
+  // Check if GIST_CONFIG_HOME env var is defined
   const char* GIST_FILE_PATH = std::getenv("GIST_CONFIG_HOME");
   if (GIST_FILE_PATH) {
     std::string GIST_CONFIG_HOME(GIST_FILE_PATH);
     fmt::print("$GIST_CONFIG_HOME: {}\n", GIST_CONFIG_HOME);
   }
 
+  // Parse auth token
   auto config = toml::parse_file( std::string(std::getenv("HOME")) + "/.config/gist/config.toml" );
   std::optional<std::string> token = config["user"]["token"].value<std::string>();
 
-  // http-lib
-  httplib::Client cli("https://api.github.com");
-  httplib::Headers headers = { 
-    { "Accept", "application/vnd.github.v3+json"},
-    { "Authorization", *token}
-  };
-  auto res = cli.Get("/gists", headers);
-  fmt::print("Response Status : {}\n", res->status);
-  fmt::print("Response Body   : {}\n", res->body);
+  const std::string url = "https://api.github.com";
 
-  json j = json::parse(res->body);
-  fmt::print("\n\nPretty Print JSON Reponse\n{}\n\n", j.dump(8)); 
-  //fmt::print("{}", j["files"]["aur-list.pkg"]);
-  //for (auto& [value] : j.items()["files"]["aur-list.pkg"]) {
-    //fmt::print("Files: {}\n", value);
-//}
+  RestClient::init();
+  RestClient::Connection* conn = new RestClient::Connection(url);
+  conn->FollowRedirects(true);
+
+  RestClient::HeaderFields headers;
+  headers["Accept"] = "application/vnd.github.v3+json";
+  headers["Authorization"] = *token;
+  conn->SetHeaders(headers);
+
+  RestClient::Response r = conn->get("/gists");
+  printResponse(r);
+  
+  RestClient::disable();
   return 0; 
 }

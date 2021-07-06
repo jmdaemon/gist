@@ -36,10 +36,10 @@ FetchContent_MakeAvailable(libfmt)
 #find_package(PkgConfig REQUIRED)
 #find_package(CapnProto CONFIG REQUIRED)
 
-FetchContent_Declare(httplib
-    GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
+FetchContent_Declare(restclient-cpp
+    GIT_REPOSITORY https://github.com/mrtazz/restclient-cpp
     )
-FetchContent_MakeAvailable(httplib)
+FetchContent_MakeAvailable(restclient-cpp)
 
 FetchContent_Declare(tomlplusplus
     GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git
