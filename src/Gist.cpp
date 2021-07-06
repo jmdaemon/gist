@@ -1,3 +1,4 @@
+#include <iostream>
 #include <string>
 #include <cstdlib> /* getenv */
 
@@ -39,8 +40,31 @@ auto createHeaders(std::optional<std::string> token) {
   return headers;
 }
 
+std::string getRaw(json o, std::string filter) {
+  for (int i=0; i < o.size(); i++) { 
+    for (auto& gist : o[i]["files"]) {
+      std::cout << gist["filename"] << std::endl;
+      if (gist["filename"] == filter) {
+        return gist["raw_url"];
+      }
+    }
+  }
+}
+
+std::string getId(json o, std::string filter) {
+  for (int i=0; i < o.size(); i++) { 
+    for (auto& gist : o[i]["files"]) {
+      std::cout << gist["filename"] << std::endl;
+      if (gist["filename"] == filter) {
+        return o[i]["id"];
+      }
+    }
+  }
+}
+
 auto getGists(RestClient::Connection* conn) { return conn->get("/gists"); }
 auto createGist(RestClient::Connection* conn, std::string contents) { return conn->post("/gists", contents); }
+auto updateGist(RestClient::Connection* conn, std::string contents) { return conn->patch("/gists", contents); }
 
 int main(int argc, char** argv) { 
 
@@ -62,9 +86,20 @@ int main(int argc, char** argv) {
   conn->FollowRedirects(true);
   conn->SetHeaders(createHeaders(token));
 
-  contents = createJson("Example json file for use in GitHub REST API", "TestFile.txt", "This is a test file.");
-  printResponse(getGists(conn));
-  printResponse(createGist(conn, contents));
+  std::string contents = createJson("Example json file for use in GitHub REST API", "TestFile.txt", "This is a test file.");
+  RestClient::Response r = getGists(conn);
+  //printResponse(r);
+  
+  auto o = json::parse(r.body);
+
+  fmt::print("{}\n", getRaw(o, "aur-list.pkg"));
+  fmt::print("{}\n", getRaw(o, "pacman-list.pkg"));
+  fmt::print("{}\n", getId(o, "aur-list.pkg"));
+  fmt::print("{}\n", getId(o, "pacman-list.pkg"));
+
+  //printResponse(createGist(conn, contents));
+  //std::string newContents = createJson("Updated json file for GitHub Gists", "TestFile.txt", "This is an updated test file.");
+  //printResponse(updateGist(conn, newContents));
   
   RestClient::disable();
   return 0; 
