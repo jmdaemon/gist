@@ -24,6 +24,24 @@ void printResponse(RestClient::Response res) {
   fmt::print("Response Body     : {}\n", res.body);
 }
 
+std::string createJson(std::string desc, std::string filename, std::string content, bool pub = false) {
+  json o;
+  o["description"]                = desc;
+  o["public"]                     = pub;
+  o["files"][filename]["content"] = content;
+  return o.dump();
+}
+
+auto createHeaders(std::optional<std::string> token) {
+  RestClient::HeaderFields headers;
+  headers["Accept"] = "application/vnd.github.v3+json";
+  headers["Authorization"] = "token " + *token;
+  return headers;
+}
+
+auto getGists(RestClient::Connection* conn) { return conn->get("/gists"); }
+auto createGist(RestClient::Connection* conn, std::string contents) { return conn->post("/gists", contents); }
+
 int main(int argc, char** argv) { 
 
   // Check if GIST_CONFIG_HOME env var is defined
@@ -42,22 +60,11 @@ int main(int argc, char** argv) {
   RestClient::init();
   RestClient::Connection* conn = new RestClient::Connection(url);
   conn->FollowRedirects(true);
+  conn->SetHeaders(createHeaders(token));
 
-  RestClient::HeaderFields headers;
-  headers["Accept"] = "application/vnd.github.v3+json";
-  headers["Authorization"] = "token " + *token;
-  conn->SetHeaders(headers);
-
-  RestClient::Response r = conn->get("/gists");
-  printResponse(r);
-
-  json o;
-  o["description"]                      = "Example json file for use in GitHub REST API";
-  o["public"]                           = true;
-  o["files"]["Testfile.txt"]["content"] = "This is a test file.";
-  std::string contents = o.dump();
-  r = conn->post("/gists", contents);
-  printResponse(r);
+  contents = createJson("Example json file for use in GitHub REST API", "TestFile.txt", "This is a test file.");
+  printResponse(getGists(conn));
+  printResponse(createGist(conn, contents));
   
   RestClient::disable();
   return 0; 
