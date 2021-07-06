@@ -52,8 +52,7 @@ def send_get(url, token):
 
 def send_post(url, token, contents):
     return requests.post(url, allow_redirects=True, headers=create_header(),
-                        auth=('Authentication', token),
-                        data=contents)
+                        auth=('Authentication', token), data=contents)
 
 def send_patch(url, token, contents):
     return requests.patch(url, allow_redirects=True, headers=create_header(),
@@ -100,32 +99,32 @@ print(f"Gist: {gist_name} Created")
 pretty_print(res, display_json=True)
 
 # == Get User Gists ==
-# res             = send_get(url, read_file(config))
-# json_res        = json.loads(res.text)
+res             = send_get(url, read_file(config))
+json_res        = json.loads(res.text)
 gist_names      = [ 'aur-list.pkg', 'pacman-list.pkg' ]
-# print(f"Retrieved User Gists")
-# pretty_print(res, display_json=True)
+print(f"Retrieved User Gists")
+pretty_print(res, display_json=True)
 
-# raw_urls = []
-# for file in range(0, len(json_res)):
-    # key = (next(iter(json_res[file]['files'])))
-    # for filename in range(0, len(gist_names)):
-        # if key == gist_names[filename]:
-            # raw_urls.append(json_res[file]['files'][key]['raw_url'])
+raw_urls = []
+for file in range(0, len(json_res)):
+    key = (next(iter(json_res[file]['files'])))
+    for filename in range(0, len(gist_names)):
+        if key == gist_names[filename]:
+            raw_urls.append(json_res[file]['files'][key]['raw_url'])
 
-# print("\nRaw Urls:")
-# for url in raw_urls:
-    # print(url)
+print("\nRaw Urls:")
+for url in raw_urls:
+    print(url)
 
-# gist_dict_keys = ["AUR", "Arch"]
+gist_dict_keys = ["AUR", "Arch"]
 
-# raw_urls_dict = {}
-# for url in range(0, len(raw_urls)):
-    # raw_urls_dict[gist_dict_keys[url]] = raw_urls[url]
+raw_urls_dict = {}
+for url in range(0, len(raw_urls)):
+    raw_urls_dict[gist_dict_keys[url]] = raw_urls[url]
 
-# print("\nRaw Urls Dict:")
-# for key, url in raw_urls_dict.items():
-    # print(f'Key: {key}\t\t\tValue: {url}')
+print("\nRaw Urls Dict:")
+for key, url in raw_urls_dict.items():
+    print(f'Key: {key}\t\t\tValue: {url}')
 
 # == Update Gist ==
 res             = send_get(url, read_file(config))
