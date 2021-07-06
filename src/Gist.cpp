@@ -43,28 +43,28 @@ auto createHeaders(std::optional<std::string> token) {
 std::string getRaw(json o, std::string filter) {
   for (int i=0; i < o.size(); i++) { 
     for (auto& gist : o[i]["files"]) {
-      std::cout << gist["filename"] << std::endl;
       if (gist["filename"] == filter) {
         return gist["raw_url"];
       }
     }
   }
+  return "";
 }
 
 std::string getId(json o, std::string filter) {
   for (int i=0; i < o.size(); i++) { 
     for (auto& gist : o[i]["files"]) {
-      std::cout << gist["filename"] << std::endl;
       if (gist["filename"] == filter) {
         return o[i]["id"];
       }
     }
   }
+  return  "";
 }
 
 auto getGists(RestClient::Connection* conn) { return conn->get("/gists"); }
 auto createGist(RestClient::Connection* conn, std::string contents) { return conn->post("/gists", contents); }
-auto updateGist(RestClient::Connection* conn, std::string contents) { return conn->patch("/gists", contents); }
+auto updateGist(RestClient::Connection* conn, std::string gistID, std::string contents) { return conn->patch("/gists/" + gistID, contents); }
 
 int main(int argc, char** argv) { 
 
@@ -92,14 +92,17 @@ int main(int argc, char** argv) {
   
   auto o = json::parse(r.body);
 
-  fmt::print("{}\n", getRaw(o, "aur-list.pkg"));
-  fmt::print("{}\n", getRaw(o, "pacman-list.pkg"));
-  fmt::print("{}\n", getId(o, "aur-list.pkg"));
-  fmt::print("{}\n", getId(o, "pacman-list.pkg"));
+  fmt::print("Aur   URL : {}\n", getRaw(o, "aur-list.pkg"));
+  fmt::print("Arch  URL : {}\n", getRaw(o, "pacman-list.pkg"));
+  fmt::print("Aur   ID  : {}\n", getId(o, "aur-list.pkg"));
+  fmt::print("Arch  ID  : {}\n", getId(o, "pacman-list.pkg"));
 
-  //printResponse(createGist(conn, contents));
-  //std::string newContents = createJson("Updated json file for GitHub Gists", "TestFile.txt", "This is an updated test file.");
-  //printResponse(updateGist(conn, newContents));
+  std::string gistID = getId(o, "TestFile.txt");
+  std::string gistURL = getRaw(o, "TestFile.txt");
+  fmt::print("Test  URL : {}\n", gistURL);
+  fmt::print("Test  ID  : {}\n", gistID); 
+  contents = createJson("Updated json file for GitHub Gists", "TestFile.txt", "This is an updated test file.");
+  printResponse(updateGist(conn, gistID, contents));
   
   RestClient::disable();
   return 0; 
