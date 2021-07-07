@@ -42,6 +42,13 @@ auto createHeaders(std::optional<std::string> token) {
   return headers;
 }
 
+RestClient::Connection* createConnection(std::string url, std::optional<std::string> token) {
+  RestClient::Connection* conn = new RestClient::Connection(url);
+  conn->FollowRedirects(true);
+  conn->SetHeaders(createHeaders(token)); 
+  return conn;
+}
+
 std::string getRaw(json o, std::string filter) {
   for (int i=0; i < o.size(); i++) { 
     for (auto& gist : o[i]["files"]) { 
@@ -66,6 +73,18 @@ std::string getId(json o, std::string filter) {
   return  "";
 }
 
+std::string readInput() {
+    //std::string filename;
+    //std::string desc;
+    //std::string contents;
+    //std::cin >> filename;
+    //std::cin >> desc;
+    //std::cin >> contents;
+  std::string input;
+  std::cin >> input;
+  return input;
+}
+
 void showUsage() {
   fmt::print("Show Program Usage\n");
 }
@@ -88,35 +107,50 @@ int main(int argc, char** argv) {
 
   // Parse auth token
   auto config = toml::parse_file(GIST_CONFIG);
-  std::optional<std::string> token = config["user"]["token"].value<std::string>();
+  const std::optional<std::string> token      = config["user"]["token"].value<std::string>();
+  const std::optional<std::string> username   = config["user"]["name"].value<std::string>();
   const std::string url = "https://api.github.com";
 
   RestClient::init();
-  RestClient::Connection* conn = new RestClient::Connection(url);
-  conn->FollowRedirects(true);
-  conn->SetHeaders(createHeaders(token)); 
 
   std::string contents = "";
-  if (input.argExists("-l")) { // List user gists
-    contents = createJson("Example json file for use in GitHub REST API", "TestFile.txt", "This is a test file.");
+  if (input.argExists("-l")) { 
+    // List user gists
+    auto conn = createConnection(url + "/users/" + *username, token);
     printResponse(getGists(conn));
-  } else if (input.argExists("-c")) { // Create new gist for user
-    contents = createJson("Example json file for use in GitHub REST API", "TestFile.txt", "This is a test file.");
+  } else if (input.argExists("-c")) { 
+    // Create new gist for user
+    auto conn = createConnection(url, token);
+    std::string filename  = readInput();
+    std::string desc      = readInput();
+    std::string contents  = readInput();
+
+    contents = createJson(desc, filename, contents);
     printResponse(createGist(conn, contents));
-  } else if (input.argExists("-u")) { // Update existing gist for user
+  } else if (input.argExists("-u")) { 
+    // Update existing gist for user
+    auto conn = createConnection(url + "/users/" + *username, token);
     RestClient::Response r = getGists(conn);
     auto o = json::parse(r.body);
+    std::string gist = readInput();
 
-    fmt::print("Aur   URL : {}\n", getRaw(o, "aur-list.pkg"));
-    fmt::print("Arch  URL : {}\n", getRaw(o, "pacman-list.pkg"));
-    fmt::print("Aur   ID  : {}\n", getId(o, "aur-list.pkg"));
-    fmt::print("Arch  ID  : {}\n", getId(o, "pacman-list.pkg"));
+    //fmt::print("Aur   URL : {}\n", getRaw(o, "aur-list.pkg"));
+    //fmt::print("Arch  URL : {}\n", getRaw(o, "pacman-list.pkg"));
+    //fmt::print("Aur   ID  : {}\n", getId(o, "aur-list.pkg"));
+    //fmt::print("Arch  ID  : {}\n", getId(o, "pacman-list.pkg"));
 
-    std::string gistID = getId(o, "TestFile.txt");
-    std::string gistURL = getRaw(o, "TestFile.txt");
-    fmt::print("Test  URL : {}\n", gistURL);
-    fmt::print("Test  ID  : {}\n", gistID); 
-    contents = createJson("Updated json file for GitHub Gists", "TestFile.txt", "This is an updated test file.");
+    //std::string gistID = getId(o, "TestFile.txt");
+    //std::string gistURL = getRaw(o, "TestFile.txt");
+    std::string gistID = getId(o, gist);
+    std::string gistURL = getRaw(o, gist);
+    //fmt::print("Test  URL : {}\n", gistURL);
+    //fmt::print("Test  ID  : {}\n", gistID); 
+    //contents = createJson("Updated json file for GitHub Gists", "TestFile.txt", "This is an updated test file.");
+    //std::string filename  = readInput();
+    std::string desc      = readInput();
+    std::string contents  = readInput();
+    contents = createJson(desc, gist, contents);
+    conn = createConnection(url, token);
     printResponse(updateGist(conn, gistID, contents));
   }
 
