@@ -80,8 +80,11 @@ std::string readInput() {
     //std::cin >> filename;
     //std::cin >> desc;
     //std::cin >> contents;
-  std::string input;
-  std::cin >> input;
+  std::string input = "";
+  while (std::getline(std::cin, input)) {
+    //std::cout << line << std::endl;
+    return input;
+  }
   return input;
 }
 
@@ -110,48 +113,60 @@ int main(int argc, char** argv) {
   const std::optional<std::string> token      = config["user"]["token"].value<std::string>();
   const std::optional<std::string> username   = config["user"]["name"].value<std::string>();
   const std::string url = "https://api.github.com";
+  fmt::print("Token: [{}]\tUsername: [{}]\n", *token, *username);
 
   RestClient::init();
 
+  std::string id    = (input.argExists("id"))     ? input.getArg("id")      : "";
+  std::string fname = (input.argExists("fname"))  ? input.getArg("fname")   : "";
   std::string contents = "";
-  if (input.argExists("-l")) { 
+  if (input.argExists("-l")) {
     // List user gists
     auto conn = createConnection(url + "/users/" + *username, token);
-    printResponse(getGists(conn));
+    //printResponse(getGists(conn));
+    if (getGists(conn).code == 200) {
+      fmt::print("Listed user gists\n");
+    }
   } else if (input.argExists("-c")) { 
     // Create new gist for user
-    auto conn = createConnection(url, token);
+    //auto conn = createConnection(url, token);
     std::string filename  = readInput();
     std::string desc      = readInput();
     std::string contents  = readInput();
+    fmt::print("Gistname    : {}\n", filename);
+    fmt::print("Description : {}\n", desc);
+    fmt::print("Contents    : {}\n", contents);
 
     contents = createJson(desc, filename, contents);
-    printResponse(createGist(conn, contents));
+    //printResponse(createGist(conn, contents));
+    if (createGist(conn, contents).code == 201) {
+      fmt::print("Created a user gist\n");
+    }
   } else if (input.argExists("-u")) { 
     // Update existing gist for user
-    auto conn = createConnection(url + "/users/" + *username, token);
-    RestClient::Response r = getGists(conn);
-    auto o = json::parse(r.body);
-    std::string gist = readInput();
-
-    //fmt::print("Aur   URL : {}\n", getRaw(o, "aur-list.pkg"));
-    //fmt::print("Arch  URL : {}\n", getRaw(o, "pacman-list.pkg"));
-    //fmt::print("Aur   ID  : {}\n", getId(o, "aur-list.pkg"));
-    //fmt::print("Arch  ID  : {}\n", getId(o, "pacman-list.pkg"));
-
-    //std::string gistID = getId(o, "TestFile.txt");
-    //std::string gistURL = getRaw(o, "TestFile.txt");
-    std::string gistID = getId(o, gist);
-    std::string gistURL = getRaw(o, gist);
-    //fmt::print("Test  URL : {}\n", gistURL);
-    //fmt::print("Test  ID  : {}\n", gistID); 
-    //contents = createJson("Updated json file for GitHub Gists", "TestFile.txt", "This is an updated test file.");
-    //std::string filename  = readInput();
-    std::string desc      = readInput();
-    std::string contents  = readInput();
-    contents = createJson(desc, gist, contents);
-    conn = createConnection(url, token);
-    printResponse(updateGist(conn, gistID, contents));
+    if (!id.empty()) {
+      auto conn = createConnection(url + "/users/" + *username, token);
+      std::string gist      = readInput();
+      std::string desc      = readInput();
+      std::string contents  = readInput();
+      contents = createJson(desc, gist, contents);
+      conn = createConnection(url, token);
+      printResponse(updateGist(conn, id, contents));
+    } else if (!fname.empty()) {
+      auto conn = createConnection(url + "/users/" + *username, token);
+      RestClient::Response r = getGists(conn);
+      auto o = json::parse(r.body);
+      std::string gist = readInput();
+      std::string gistID = getId(o, gist);
+      std::string gistURL = getRaw(o, gist);
+      //fmt::print("Test  URL : {}\n", gistURL);
+      //fmt::print("Test  ID  : {}\n", gistID); 
+      std::string desc      = readInput();
+      std::string contents  = readInput();
+      contents = createJson(desc, gist, contents);
+      conn = createConnection(url, token);
+      printResponse(updateGist(conn, gistID, contents));
+    }
   }
 
   RestClient::disable();
