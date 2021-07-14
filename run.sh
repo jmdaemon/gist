@@ -2,6 +2,9 @@
 
 cd build
 
+update_id="7c5d92adac82b97705d6c25fa2e766ee"
+delete_id="8c118afbf19f2d035e04e8a6a87e66f8"
+
 list_gists() { 
     ./src/gist -l
 }
@@ -22,21 +25,21 @@ EOF
 }
 
 update_gist_id() {
-    ./src/gist -u "id" 7d860cf5e09b3534c31f62b0ba2d88d7 << EOF
+    ./src/gist -u "id" $update_id << EOF
     Updated json file for GitHub Gists
     This is an updated test file.
 EOF
 }
 
 delete_gist() {
-    ./src/gist -d 8c118afbf19f2d035e04e8a6a87e66f8
+    ./src/gist -d $delete_id
 }
 
 list_gists
 create_gist
 update_gist_fname
 update_gist_id
-delete_gist
+#delete_gist
 
 # fmt::print("Aur   URL : {}\n", getRaw(o, "aur-list.pkg"));
 # fmt::print("Arch  URL : {}\n", getRaw(o, "pacman-list.pkg"));

@@ -1,6 +1,7 @@
 #include "Data.h"
 
 #include <iostream>
+//#include <ranges>
 
 void printData(Data data) { 
   fmt::print("==== Gist Data ====\n"); 
@@ -24,12 +25,10 @@ std::string getRaw(nlohmann::json o, std::string filter) {
 }
 
 std::string getId(nlohmann::json o, std::string filter) {
-  for (int i=0; i < o.size(); i++) { 
-    for (auto& gist : o[i]["files"]) { 
-      if (gist["filename"] == filter) {
-        return o[i]["id"];
-      }
-    }
+  for (int i=0; i < o.size(); i++) {
+    std::string fname = (*o[i]["files"].begin())["filename"];
+    if (fname == filter)
+      return o[i]["id"];
   }
   return "";
 }
@@ -37,10 +36,6 @@ std::string getId(nlohmann::json o, std::string filter) {
 std::string getFilename(nlohmann::json o, std::string id) { 
   for (int i = 0; i < o.size(); i++) {
     if (nlohmann::json(o[i])["id"] == id) {
-      //std::cout << "Gist ID in getFilename: " << gist["id"] << std::endl;
-      //nlohmann::json gistFiles = o[i]["files"]; 
-      //auto it = o[i]["files"].begin();
-      //std::cout << "*it: " << *it << std::endl;
       std::string result( (*o[i]["files"].begin())["filename"]);
       return result;
     }
