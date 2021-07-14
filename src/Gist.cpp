@@ -1,4 +1,6 @@
 #include <iostream>
+#include <iomanip>
+#include <fstream>
 #include <string>
 #include <cstdlib> /* getenv */
 
@@ -70,7 +72,51 @@ std::string getId(json o, std::string filter) {
       }
     }
   }
-  return  "";
+  return "";
+}
+
+std::string getFilename(json o, std::string id) { 
+  int i = 0;
+  for (auto& [gistNum, gistJSON] : o.items()) {
+      //std::cout << "key: " << gistNum << ", value:" << gistJSON << '\n';
+    for (auto& [key, val] : gistJSON.items()) {
+        //std::cout << "Key: " << key << ", Value: " << val << std::endl;
+      if (val == id) {
+          std::cout << "Gist ID: " << val << std::endl;
+          std::cout << gistJSON[""] << std::endl; 
+          //json gistFiles = json(val["files"]);
+          json currentGist = o[i];
+          std::cout << currentGist.dump() << "\n\n"<< std::endl;
+          json gistFiles = currentGist["files"];
+          std::cout << gistFiles.dump() << std::endl; 
+        for (auto& [fname, values] : gistFiles.items()) {
+          std::cout << "Filename: " << fname << std::endl;
+          return fname;
+          //std::cout << "Gist ID: " << val << std::endl;
+          //std::cout << gistJSON[""] << std::endl;
+        }
+      }
+    }
+    i++;
+  }
+  /*
+     This code is flawed because we can't access this o[i]["files"][*]["filename"
+     */
+  //for (int i=0; i < o.size(); i++) { 
+    //std::cout << o[i]["id"] << std::endl;
+    //if (o[i]["id"] == id) {
+      //std::cout << o[i] << std::endl;
+      //std::cout << o[i]["files"] << std::endl;
+      //std::cout << o[i]["files"]["filename"] << std::endl;
+      //return o[i]["files"]["filename"];
+    //}
+  //}
+  return "";
+}
+
+void serialize(json data, std::string filename) {
+    std::ofstream output(filename);
+    output << std::setw(4) << data << std::endl;
 }
 
 std::string readInput() {
@@ -128,8 +174,9 @@ int main(int argc, char** argv) {
       fmt::print("Listed user gists\n");
     }
   } else if (input.argExists("-c")) { 
+
     // Create new gist for user
-    //auto conn = createConnection(url, token);
+    auto conn = createConnection(url, token);
     std::string filename  = readInput();
     std::string desc      = readInput();
     std::string contents  = readInput();
@@ -138,20 +185,49 @@ int main(int argc, char** argv) {
     fmt::print("Contents    : {}\n", contents);
 
     contents = createJson(desc, filename, contents);
+    auto r = createGist(conn, contents);
+    auto o = json::parse(r.body);
+
     //printResponse(createGist(conn, contents));
-    if (createGist(conn, contents).code == 201) {
-      fmt::print("Created a user gist\n");
-    }
+    //if (createGist(conn, contents).code == 201) {
+      //fmt::print("Created a user gist\n");
+    //}
   } else if (input.argExists("-u")) { 
     // Update existing gist for user
+    
     if (!id.empty()) {
+      /*
+         If user passes in an id for the gist
+            Read gistID, gistDesc, gistCont
+              Make request with gistID to get filename from github
+            Create json string from gistName, gistID, gistDesc, gistCont
+            Send update request to /gists/{gistID} with json contents
+         */
+
+      // Get Gist remote filename
       auto conn = createConnection(url + "/users/" + *username, token);
-      std::string gist      = readInput();
+      auto o = json::parse(getGists(conn).body); 
+
+      //std::ofstream output("gists.json"); 
+      //output << std::setw(4) << o << std::endl;
+      //fname = getFilename(o, id);
+
+      // Prepare gist json data
+      fmt::print("id arg: {}\n", id);
+      fname = getFilename(o, id);
       std::string desc      = readInput();
       std::string contents  = readInput();
-      contents = createJson(desc, gist, contents);
+
+      fmt::print("Gist ID       : {}\n", id);
+      fmt::print("Gist Filename : {}\n", fname);
+      fmt::print("Description   : {}\n", desc);
+      fmt::print("Contents      : {}\n", contents);
+      contents = createJson(desc, fname, contents); 
+
+      // Send Gist Update Request
       conn = createConnection(url, token);
-      printResponse(updateGist(conn, id, contents));
+      auto r = updateGist(conn, id, contents);
+      printResponse(r);
     } else if (!fname.empty()) {
       auto conn = createConnection(url + "/users/" + *username, token);
       RestClient::Response r = getGists(conn);

@@ -1,22 +1,37 @@
 #!/bin/bash
 
 cd build
-./src/gist -l
-./src/gist -c << EOF 
-TestFile.txt
-Example json file for use in GitHub REST API
-This is a test file.
+
+list_gists() { 
+    ./src/gist -l
+}
+
+create_gist() {
+    ./src/gist -c << EOF 
+    TestFile.txt
+    Example json file for use in GitHub REST API
+    This is a test file.
 EOF
-./src/gist -u fname << EOF
-TestFile.txt
-Updated json file for GitHub Gists
-This is an updated test file.
+}
+
+update_gist_fname() {
+    ./src/gist -u fname "TestFile.txt" << EOF
+    Updated json file for GitHub Gists
+    This is an updated test file.
 EOF
-./src/gist -u "id" << EOF
-0def81b74c970d14746262bbd36c0e07
-Updated json file for GitHub Gists
-This is an updated test file.
+}
+
+update_gist_id() {
+    ./src/gist -u "id" "7d860cf5e09b3534c31f62b0ba2d88d7" << EOF
+    Updated json file for GitHub Gists
+    This is an updated test file.
 EOF
+}
+list_gists
+create_gist
+update_gist_fname
+update_gist_id
+
 # fmt::print("Aur   URL : {}\n", getRaw(o, "aur-list.pkg"));
 # fmt::print("Arch  URL : {}\n", getRaw(o, "pacman-list.pkg"));
 # fmt::print("Aur   ID  : {}\n", getId(o, "aur-list.pkg"));
