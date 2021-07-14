@@ -35,10 +35,15 @@ delete_gist() {
     ./src/gist -d $delete_id
 }
 
-list_gists
-create_gist
-update_gist_fname
-update_gist_id
+show_version() {
+    ./src/gist -v
+}
+show_version
+
+#list_gists
+#create_gist
+#update_gist_fname
+#update_gist_id
 #delete_gist
 
 # fmt::print("Aur   URL : {}\n", getRaw(o, "aur-list.pkg"));

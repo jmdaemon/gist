@@ -33,6 +33,14 @@ FetchContent_Declare(libfmt
     GIT_REPOSITORY "https://github.com/fmtlib/fmt")
 FetchContent_MakeAvailable(libfmt)
 
+# Configure gist project versions
+configure_file (
+  "${PROJECT_SOURCE_DIR}/include/Version.h.in"
+  "${PROJECT_BINARY_DIR}/include/Version.h"
+)
+
+#include_directories("${PROJECT_BINARY_DIR}/include")
+
 #find_package(PkgConfig REQUIRED)
 #find_package(CapnProto CONFIG REQUIRED)
 
@@ -48,9 +56,7 @@ FetchContent_Declare(tomlplusplus
 FetchContent_MakeAvailable(tomlplusplus)
 
 FetchContent_Declare(json
-  #GIT_REPOSITORY https://github.com/nlohmann/json.git 
   GIT_REPOSITORY https://github.com/ArthurSonzogni/nlohmann_json_cmake_fetchcontent.git
-  #GIT_TAG v3.7.3)
   GIT_TAG v3.9.1)
 
 FetchContent_GetProperties(json)
@@ -88,11 +94,7 @@ if(BUILD_TESTING)
   add_subdirectory(test)
 endif()
 
-
 set(CMAKE_INSTALL_PREFIX /usr/local)
 install(TARGETS ${OGGEX} DESTINATION bin)
 install(TARGETS ${OGGEX} CONFIGURATIONS Debug   RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/Debug/bin)
 install(TARGETS ${OGGEX} CONFIGURATIONS Release RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/Release/bin)
-
-# Define Ninja uninstall
-#add_custom_target(uninstall COMMAND xargs rm < ${CMAKE_CURRENT_BINARY_DIR}/install_manifest.txt)

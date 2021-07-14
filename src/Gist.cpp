@@ -1,5 +1,6 @@
 #include "Data.h"
 #include "InputParser.h"
+#include "Version.h"
 
 #include <cstdlib> /* getenv */
 
@@ -14,6 +15,7 @@ using nlohmann::json;
 void showUsage() {
   fmt::print("Usage: gist [id/filename] [desc] [contents]");
   fmt::print("      -h, --help                Show this message and exit\n");
+  fmt::print("      -v, --version,            Show gist version\n");
   fmt::print("      -u id [id],               Update an existing gist specified by id\n");
   fmt::print("      -u fname [fname],         Update an existing gist specified by filename\n");
   fmt::print("      -d [id],                  Delete a gist\n\n");
@@ -71,7 +73,10 @@ int main(int argc, char** argv) {
   if (input.argExists("-h") || input.argExists("--help")) {
     showUsage();
     return 0;
-  } 
+  } else if (input.argExists("-v") || input.argExists("--version")) {
+    fmt::print("gist v{}.{}.{}\n", GIST_VERSION_MAJOR, GIST_VERSION_MINOR, GIST_VERSION_PATCH);
+    return 0;
+  }
 
   std::string GIST_CONFIG = (std::getenv("GIST_CONFIG_HOME")) 
     ? std::string(std::getenv("GIST_CONFIG_HOME")) : std::string(std::getenv("HOME")) + "/.config/gist/config.toml"; 

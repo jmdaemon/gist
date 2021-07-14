@@ -1,4 +1,4 @@
-set(HEADER_LIST "${GIST_SOURCE_DIR}/include/util")
+set(HEADER_LIST "${GIST_SOURCE_DIR}/include/util" "${GIST_SOURCE_DIR}/include" "${PROJECT_BINARY_DIR}/include")
 set(TARGET gist)
 
 add_executable(${TARGET})
