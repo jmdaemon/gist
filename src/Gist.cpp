@@ -47,21 +47,22 @@ RestClient::Connection* createConnection(std::string url, std::optional<std::str
   return conn;
 }
 
-auto getGists(RestClient::Connection* conn) { return conn->get("/gists"); }
+auto sendGET(RestClient::Connection* conn) { return conn->get("/gists"); }
+auto sendPATCH(RestClient::Connection* conn, std::string gistID, std::string contents) { return conn->patch("/gists/" + gistID, contents); }
 auto createGist(RestClient::Connection* conn, std::string contents) { return conn->post("/gists", contents); }
-auto updateGist(RestClient::Connection* conn, std::string gistID, std::string contents) { return conn->patch("/gists/" + gistID, contents); }
 
-json listUserGists(std::string url, std::string username, std::optional<std::string> token) {
+json listGists(std::string url, std::string username, std::optional<std::string> token) {
   auto conn = createConnection(url + "/users/" + username, token);
-  auto o = json::parse(getGists(conn).body);
+  auto o = json::parse(sendGET(conn).body);
   return o;
 }
 
-void updateUserGist(Data data, std::string url, std::optional<std::string> token) {
+void updateGist(Data data, std::string url, std::optional<std::string> token, std::string msg) {
+  fmt::print("{}\n", msg);
   printData(data);
   auto contents  = createJson(data.desc, data.fname, data.contents); 
   auto conn = createConnection(url, token);
-  auto res  = updateGist(conn, data.id, contents);
+  auto res  = sendPATCH(conn, data.id, contents);
   prettyPrint(res);
 }
 
@@ -96,7 +97,7 @@ int main(int argc, char** argv) {
   if (input.argExists("-l")) {
     // List user gists
     fmt::print("Listing all gists for {}\n", *username);
-    listUserGists(url, *username, token);
+    listGists(url, *username, token);
   } else if (input.argExists("-c")) { 
     // Create new gist for user
     fmt::print("Creating gist for {}\n", *username);
@@ -110,20 +111,15 @@ int main(int argc, char** argv) {
 
   } else if (input.argExists("-u")) { 
     // Update existing gist for user
-    auto o = listUserGists(url, *username, token);
+    auto o = listGists(url, *username, token);
 
-    if (!id.empty()) { 
-      fmt::print("Updating gist {}, for {}\n", id, *username);
-      Data data = {id, getFilename(o, id), readInput(), readInput()};
-      updateUserGist(data, url, token);
+    Data data;
+    if (!id.empty())
+      data = {id, getFilename(o, id), readInput(), readInput()};
+    else if (!fname.empty())
+      data = Data{getId(o, fname), fname, readInput(), readInput()};
 
-    } else if (!fname.empty()) {
-      id = getId(o, fname);
-      fmt::print("Updating gist {} for {}\n", id, *username);
-      
-      Data data = Data{id, fname, readInput(), readInput()};
-      updateUserGist(data, url, token);
-    }
+    updateGist(data, url, token, fmt::format(fmt::runtime("Updating gist {} for {}\n"), data.id, *username));
   }
 
   RestClient::disable();
