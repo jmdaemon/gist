@@ -13,9 +13,10 @@ using nlohmann::json;
 
 void showUsage() {
   fmt::print("Usage: gist [id/filename] [desc] [contents]");
-  fmt::print("  -h, --help      Show this message and exit\n");
-  fmt::print("  -u id,          Update an existing gist specified by id\n");
-  fmt::print("  -u fname,       Update an existing gist specified by filename\n\n");
+  fmt::print("      -h, --help                Show this message and exit\n");
+  fmt::print("      -u id [id],               Update an existing gist specified by id\n");
+  fmt::print("      -u fname [fname],         Update an existing gist specified by filename\n");
+  fmt::print("      -d [id],                  Delete a gist\n\n");
 }
 
 void printResponse(RestClient::Response res) {
@@ -47,6 +48,7 @@ RestClient::Connection* createConnection(std::string url, std::optional<std::str
 
 auto sendGET(RestClient::Connection* conn) { return conn->get("/gists"); }
 auto sendPATCH(RestClient::Connection* conn, std::string gistID, std::string contents) { return conn->patch("/gists/" + gistID, contents); }
+auto sendDELETE(RestClient::Connection* conn, std::string gistID) { return conn->del("/gists/" + gistID); }
 auto createGist(RestClient::Connection* conn, std::string contents) { return conn->post("/gists", contents); }
 
 json listGists(std::string url, std::string username, std::optional<std::string> token) {
@@ -91,12 +93,12 @@ int main(int argc, char** argv) {
   std::string fname = (input.argExists("fname"))  ? input.getArg("fname")   : "";
 
   if (input.argExists("-l")) {
-    // List user gists
+    // List all gists
 
     fmt::print("Listing all gists for {}\n", *username);
     listGists(url, *username, token);
   } else if (input.argExists("-u")) { 
-    // Update existing gist for user
+    // Update existing gist
     auto o = listGists(url, *username, token);
     Data data;
     if (!id.empty())
@@ -105,8 +107,15 @@ int main(int argc, char** argv) {
       data = Data{getId(o, fname), fname, readInput(), readInput()};
 
     updateGist(data, url, token, fmt::format(fmt::runtime("Updating gist {} for {}\n"), data.id, *username));
-  } else {
-    // Create new gist for user
+  } else if (input.argExists("-d")) { 
+    // Delete existing gist
+    id = input.getArg("-d");
+    auto conn     = createConnection(url, token);
+    auto res      = sendDELETE(conn, id);
+    fmt::print("Response: {}\n", res.code);
+  }
+  else {
+    // Create new gist
     fmt::print("Creating gist for {}\n", *username);
     auto conn = createConnection(url, token);
     Data data = Data{id, readInput(), readInput(), readInput()};
