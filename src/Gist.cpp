@@ -4,10 +4,8 @@
 #include <cstdlib> /* getenv */
 
 // Libraries
-#include <fmt/core.h>
 #include <toml++/toml.h>
 #include <nlohmann/json.hpp>
-
 #include "restclient-cpp/connection.h"
 #include "restclient-cpp/restclient.h"
 
@@ -53,6 +51,20 @@ auto getGists(RestClient::Connection* conn) { return conn->get("/gists"); }
 auto createGist(RestClient::Connection* conn, std::string contents) { return conn->post("/gists", contents); }
 auto updateGist(RestClient::Connection* conn, std::string gistID, std::string contents) { return conn->patch("/gists/" + gistID, contents); }
 
+json listUserGists(std::string url, std::string username, std::optional<std::string> token) {
+  auto conn = createConnection(url + "/users/" + username, token);
+  auto o = json::parse(getGists(conn).body);
+  return o;
+}
+
+void updateUserGist(Data data, std::string url, std::optional<std::string> token) {
+  printData(data);
+  auto contents  = createJson(data.desc, data.fname, data.contents); 
+  auto conn = createConnection(url, token);
+  auto res  = updateGist(conn, data.id, contents);
+  prettyPrint(res);
+}
+
 int main(int argc, char** argv) {
   InputParser input(argc, argv);
   if (input.argExists("-h") || input.argExists("--help")) {
@@ -83,13 +95,9 @@ int main(int argc, char** argv) {
 
   if (input.argExists("-l")) {
     // List user gists
-
     fmt::print("Listing all gists for {}\n", *username);
-    auto conn = createConnection(url + "/users/" + *username, token);
-    auto res  = getGists(conn);
-    prettyPrint(res);
+    listUserGists(url, *username, token);
   } else if (input.argExists("-c")) { 
-
     // Create new gist for user
     fmt::print("Creating gist for {}\n", *username);
     auto conn = createConnection(url, token);
@@ -102,39 +110,19 @@ int main(int argc, char** argv) {
 
   } else if (input.argExists("-u")) { 
     // Update existing gist for user
+    auto o = listUserGists(url, *username, token);
 
     if (!id.empty()) { 
-
-      // Get remote filename of gist 
       fmt::print("Updating gist {}, for {}\n", id, *username);
-      auto conn = createConnection(url + "/users/" + *username, token);
-      auto o = json::parse(getGists(conn).body); 
-
-      // Create the json data
       Data data = {id, getFilename(o, id), readInput(), readInput()};
-      printData(data);
-      contents = createJson(data.desc, data.fname, data.contents); 
+      updateUserGist(data, url, token);
 
-      conn     = createConnection(url, token);
-      auto res = updateGist(conn, id, contents);
-      prettyPrint(res);
     } else if (!fname.empty()) {
-
-      // Get remote id of gist
-      auto conn = createConnection(url + "/users/" + *username, token);
-      auto o = json::parse(getGists(conn).body);
-      serialize(o, "update-gist-fname.json");
       id = getId(o, fname);
-      fmt::print("Updating gist {}, for {}\n", id, *username);
+      fmt::print("Updating gist {} for {}\n", id, *username);
       
-      // Create the json data
       Data data = Data{id, fname, readInput(), readInput()};
-      printData(data);
-      contents = createJson(data.desc, data.fname, data.contents);
-
-      conn     = createConnection(url, token);
-      auto res = updateGist(conn, id, contents);
-      prettyPrint(res);
+      updateUserGist(data, url, token);
     }
   }
 
