@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
     fmt::print("Listing all gists for {}\n", *username);
     auto conn = createConnection(url + "/users/" + *username, token);
     auto res  = getGists(conn);
-    //prettyPrint(res);
+    prettyPrint(res);
   } else if (input.argExists("-c")) { 
 
     // Create new gist for user
@@ -105,34 +105,36 @@ int main(int argc, char** argv) {
 
     if (!id.empty()) { 
 
-      // Get remote filename of gist
+      // Get remote filename of gist 
       fmt::print("Updating gist {}, for {}\n", id, *username);
       auto conn = createConnection(url + "/users/" + *username, token);
       auto o = json::parse(getGists(conn).body); 
 
-      // Prepare gist json data
+      // Create the json data
       Data data = {id, getFilename(o, id), readInput(), readInput()};
       printData(data);
       contents = createJson(data.desc, data.fname, data.contents); 
 
-      // Send Gist Update Request
       conn     = createConnection(url, token);
       auto res = updateGist(conn, id, contents);
       prettyPrint(res);
     } else if (!fname.empty()) {
+
+      // Get remote id of gist
       auto conn = createConnection(url + "/users/" + *username, token);
-      RestClient::Response r = getGists(conn);
-      auto o = json::parse(r.body);
-      std::string gist = readInput();
-      std::string gistID = getId(o, gist);
-      std::string gistURL = getRaw(o, gist);
-      //fmt::print("Test  URL : {}\n", gistURL);
-      //fmt::print("Test  ID  : {}\n", gistID); 
-      std::string desc      = readInput();
-      std::string contents  = readInput();
-      contents = createJson(desc, gist, contents);
-      conn = createConnection(url, token);
-      printResponse(updateGist(conn, gistID, contents));
+      auto o = json::parse(getGists(conn).body);
+      serialize(o, "update-gist-fname.json");
+      id = getId(o, fname);
+      fmt::print("Updating gist {}, for {}\n", id, *username);
+      
+      // Create the json data
+      Data data = Data{id, fname, readInput(), readInput()};
+      printData(data);
+      contents = createJson(data.desc, data.fname, data.contents);
+
+      conn     = createConnection(url, token);
+      auto res = updateGist(conn, id, contents);
+      prettyPrint(res);
     }
   }
 

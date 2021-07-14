@@ -27,9 +27,10 @@ update_gist_id() {
     This is an updated test file.
 EOF
 }
+
 list_gists
 create_gist
-#update_gist_fname
+update_gist_fname
 update_gist_id
 
 # fmt::print("Aur   URL : {}\n", getRaw(o, "aur-list.pkg"));
