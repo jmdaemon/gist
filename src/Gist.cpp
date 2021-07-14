@@ -3,6 +3,10 @@
 #include <fstream>
 #include <string>
 #include <cstdlib> /* getenv */
+#include <algorithm>
+#include <functional> 
+#include <cctype>
+#include <locale>
 
 // Libraries
 #include <fmt/core.h>
@@ -27,6 +31,14 @@ using nlohmann::json;
 void printResponse(RestClient::Response res) {
   fmt::print("Response Code     : {}\n", res.code);
   fmt::print("Response Body     : {}\n", res.body);
+}
+
+void prettyPrint(RestClient::Response res) {
+  //json response = json::parse(res.body);
+  //std::cout << std::setw(4) << response << std::endl;
+  std::string response = json::parse(res.body).dump(4);
+  //std::cout << std::setw(4) << response << std::endl;
+  fmt::print("{}\n", response);
 }
 
 std::string createJson(std::string desc, std::string filename, std::string content, bool pub = false) {
@@ -82,13 +94,14 @@ std::string getFilename(json o, std::string id) {
     for (auto& [key, val] : gistJSON.items()) {
         //std::cout << "Key: " << key << ", Value: " << val << std::endl;
       if (val == id) {
-          std::cout << "Gist ID: " << val << std::endl;
-          std::cout << gistJSON[""] << std::endl; 
+          //std::cout << "Gist ID: " << val << std::endl;
+          //std::cout << gistJSON[""] << std::endl; 
           //json gistFiles = json(val["files"]);
-          json currentGist = o[i];
-          std::cout << currentGist.dump() << "\n\n"<< std::endl;
-          json gistFiles = currentGist["files"];
-          std::cout << gistFiles.dump() << std::endl; 
+          //json currentGist = o[i];
+          //std::cout << currentGist.dump() << "\n\n"<< std::endl;
+          //json gistFiles = currentGist["files"];
+        json gistFiles = o[i]["files"];
+          //std::cout << gistFiles.dump() << std::endl; 
         for (auto& [fname, values] : gistFiles.items()) {
           std::cout << "Filename: " << fname << std::endl;
           return fname;
@@ -119,6 +132,18 @@ void serialize(json data, std::string filename) {
     output << std::setw(4) << data << std::endl;
 }
 
+// C Struct
+//typedef union Data_u {
+    //struct Data_s { 
+      //std::string id, fname, desc, contents;
+    //};
+    //std::string Data_a[4];
+//} Data;
+
+struct Data {
+  std::string id, fname, desc, contents;
+};
+
 std::string readInput() {
     //std::string filename;
     //std::string desc;
@@ -132,6 +157,34 @@ std::string readInput() {
     return input;
   }
   return input;
+}
+
+// trim from start
+static inline std::string &ltrim(std::string &s) {
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(),
+            std::not1(std::ptr_fun<int, int>(std::isspace))));
+    return s;
+}
+
+// trim from end
+static inline std::string &rtrim(std::string &s) {
+    s.erase(std::find_if(s.rbegin(), s.rend(),
+            std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+    return s;
+}
+
+// trim from both ends
+static inline std::string &trim(std::string &s) {
+    return ltrim(rtrim(s));
+}
+
+void printData(Data data) { 
+  fmt::print("==== Gist Data ====\n"); 
+  fmt::print("ID           : {}\n", trim(data.id));
+  fmt::print("Filename     : {}\n", trim(data.fname));
+  fmt::print("Description  : {}\n", trim(data.desc));
+  fmt::print("Contents     : {}\n", trim(data.contents));
+  fmt::print("\n");
 }
 
 void showUsage() {
@@ -159,75 +212,58 @@ int main(int argc, char** argv) {
   const std::optional<std::string> token      = config["user"]["token"].value<std::string>();
   const std::optional<std::string> username   = config["user"]["name"].value<std::string>();
   const std::string url = "https://api.github.com";
-  fmt::print("Token: [{}]\tUsername: [{}]\n", *token, *username);
+
+  fmt::print("\n==== Config ====\n");
+  fmt::print("Token    : [{}]\n", *token);
+  fmt::print("Username : [{}]\n\n", *username);
 
   RestClient::init();
 
   std::string id    = (input.argExists("id"))     ? input.getArg("id")      : "";
   std::string fname = (input.argExists("fname"))  ? input.getArg("fname")   : "";
   std::string contents = "";
+
   if (input.argExists("-l")) {
     // List user gists
+
+    fmt::print("Listing all gists for {}\n", *username);
     auto conn = createConnection(url + "/users/" + *username, token);
-    //printResponse(getGists(conn));
-    if (getGists(conn).code == 200) {
-      fmt::print("Listed user gists\n");
-    }
+    auto res  = getGists(conn);
+    //prettyPrint(res);
   } else if (input.argExists("-c")) { 
 
     // Create new gist for user
+    fmt::print("Creating gist for {}\n", *username);
     auto conn = createConnection(url, token);
-    std::string filename  = readInput();
-    std::string desc      = readInput();
-    std::string contents  = readInput();
-    fmt::print("Gistname    : {}\n", filename);
-    fmt::print("Description : {}\n", desc);
-    fmt::print("Contents    : {}\n", contents);
+    Data data = Data{id, readInput(), readInput(), readInput()};
+    printData(data);
 
-    contents = createJson(desc, filename, contents);
-    auto r = createGist(conn, contents);
-    auto o = json::parse(r.body);
+    contents = createJson(data.desc, data.fname, data.contents);
+    auto res   = createGist(conn, contents);
+    prettyPrint(res);
 
-    //printResponse(createGist(conn, contents));
-    //if (createGist(conn, contents).code == 201) {
-      //fmt::print("Created a user gist\n");
-    //}
   } else if (input.argExists("-u")) { 
     // Update existing gist for user
     
     if (!id.empty()) {
-      /*
-         If user passes in an id for the gist
-            Read gistID, gistDesc, gistCont
-              Make request with gistID to get filename from github
-            Create json string from gistName, gistID, gistDesc, gistCont
-            Send update request to /gists/{gistID} with json contents
-         */
 
-      // Get Gist remote filename
+      // Get remote filename of gist
       auto conn = createConnection(url + "/users/" + *username, token);
       auto o = json::parse(getGists(conn).body); 
 
+      // Serialize output if needed
       //std::ofstream output("gists.json"); 
       //output << std::setw(4) << o << std::endl;
-      //fname = getFilename(o, id);
 
       // Prepare gist json data
-      fmt::print("id arg: {}\n", id);
-      fname = getFilename(o, id);
-      std::string desc      = readInput();
-      std::string contents  = readInput();
-
-      fmt::print("Gist ID       : {}\n", id);
-      fmt::print("Gist Filename : {}\n", fname);
-      fmt::print("Description   : {}\n", desc);
-      fmt::print("Contents      : {}\n", contents);
-      contents = createJson(desc, fname, contents); 
+      Data data = {id, getFilename(o, id), readInput(), readInput()};
+      printData(data);
+      contents = createJson(data.desc, data.fname, data.contents); 
 
       // Send Gist Update Request
-      conn = createConnection(url, token);
-      auto r = updateGist(conn, id, contents);
-      printResponse(r);
+      conn     = createConnection(url, token);
+      auto res = updateGist(conn, id, contents);
+      prettyPrint(res);
     } else if (!fname.empty()) {
       auto conn = createConnection(url + "/users/" + *username, token);
       RestClient::Response r = getGists(conn);
