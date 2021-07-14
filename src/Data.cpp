@@ -35,17 +35,15 @@ std::string getId(nlohmann::json o, std::string filter) {
 }
 
 std::string getFilename(nlohmann::json o, std::string id) { 
-  int i = 0;
-  for (auto& [i_key, gist] : o.items()) {
-    for (auto& [j_key, gistID] : gist.items()) {
-      if (gistID == id) {
-        nlohmann::json gistFiles = o[i]["files"];
-        for (auto& [fname, values] : gistFiles.items()) {
-          return fname;
-        }
-      }
+  for (int i = 0; i < o.size(); i++) {
+    if (nlohmann::json(o[i])["id"] == id) {
+      //std::cout << "Gist ID in getFilename: " << gist["id"] << std::endl;
+      //nlohmann::json gistFiles = o[i]["files"]; 
+      //auto it = o[i]["files"].begin();
+      //std::cout << "*it: " << *it << std::endl;
+      std::string result( (*o[i]["files"].begin())["filename"]);
+      return result;
     }
-    i++;
   }
   return "";
 }
