@@ -1,7 +1,6 @@
 #include "Data.h"
 
 #include <iostream>
-#include <iomanip>
 
 void printData(Data data) { 
   fmt::print("==== Gist Data ====\n"); 
@@ -27,7 +26,6 @@ std::string getRaw(nlohmann::json o, std::string filter) {
 std::string getId(nlohmann::json o, std::string filter) {
   for (int i=0; i < o.size(); i++) { 
     for (auto& gist : o[i]["files"]) { 
-      std::cout << gist["filename"] << std::endl;
       if (gist["filename"] == filter) {
         return o[i]["id"];
       }
@@ -53,10 +51,9 @@ std::string getFilename(nlohmann::json o, std::string id) {
 }
 
 void serialize(nlohmann::json data, std::string filename) {
-    std::ofstream output(filename);
-    output << std::setw(4) << data << std::endl;
+  auto out = fmt::output_file(filename); 
+  out.print("{}\n", data.dump(4));
 }
-
 
 std::string readInput() {
   std::string input = "";
@@ -67,21 +64,20 @@ std::string readInput() {
 }
 
 // trim from start
-static inline std::string &ltrim(std::string &s) {
+inline std::string &ltrim(std::string &s) {
     s.erase(s.begin(), std::find_if(s.begin(), s.end(),
             std::not1(std::ptr_fun<int, int>(std::isspace))));
     return s;
 }
 
 // trim from end
-static inline std::string &rtrim(std::string &s) {
+inline std::string &rtrim(std::string &s) {
     s.erase(std::find_if(s.rbegin(), s.rend(),
             std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
     return s;
 }
 
 // trim from both ends
-static inline std::string &trim(std::string &s) {
+inline std::string &trim(std::string &s) {
     return ltrim(rtrim(s));
 }
-
