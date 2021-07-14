@@ -7,7 +7,7 @@ list_gists() {
 }
 
 create_gist() {
-    ./src/gist -c << EOF 
+    ./src/gist << EOF 
     TestFile.txt
     Example json file for use in GitHub REST API
     This is a test file.

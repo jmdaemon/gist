@@ -14,7 +14,6 @@ using nlohmann::json;
 void showUsage() {
   fmt::print("Usage: gist [id/filename] [desc] [contents]");
   fmt::print("  -h, --help      Show this message and exit\n");
-  fmt::print("  -c,             Create a new gist\n");
   fmt::print("  -u id,          Update an existing gist specified by id\n");
   fmt::print("  -u fname,       Update an existing gist specified by filename\n\n");
 }
@@ -96,18 +95,6 @@ int main(int argc, char** argv) {
 
     fmt::print("Listing all gists for {}\n", *username);
     listGists(url, *username, token);
-  } else if (input.argExists("-c")) { 
-
-    // Create new gist for user
-    fmt::print("Creating gist for {}\n", *username);
-    auto conn = createConnection(url, token);
-    Data data = Data{id, readInput(), readInput(), readInput()};
-    printData(data);
-
-    std::string contents = createJson(data);
-    auto res = createGist(conn, contents);
-    printResponse(res);
-
   } else if (input.argExists("-u")) { 
     // Update existing gist for user
     auto o = listGists(url, *username, token);
@@ -118,7 +105,18 @@ int main(int argc, char** argv) {
       data = Data{getId(o, fname), fname, readInput(), readInput()};
 
     updateGist(data, url, token, fmt::format(fmt::runtime("Updating gist {} for {}\n"), data.id, *username));
+  } else {
+    // Create new gist for user
+    fmt::print("Creating gist for {}\n", *username);
+    auto conn = createConnection(url, token);
+    Data data = Data{id, readInput(), readInput(), readInput()};
+    printData(data);
+
+    std::string contents = createJson(data);
+    auto res = createGist(conn, contents);
+    printResponse(res);
   }
+
   RestClient::disable();
   return 0; 
 }
