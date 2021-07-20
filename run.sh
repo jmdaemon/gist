@@ -32,7 +32,7 @@ EOF
 }
 
 delete_gist() {
-    ./src/gist -d $delete_id
+    ./src/gist -D $delete_id
 }
 
 show_version() {

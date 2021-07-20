@@ -18,7 +18,7 @@ void showUsage() {
   fmt::print("      -v, --version,            Show gist version\n");
   fmt::print("      -u id [id],               Update an existing gist specified by id\n");
   fmt::print("      -u fname [fname],         Update an existing gist specified by filename\n");
-  fmt::print("      -d [id],                  Delete a gist\n\n");
+  fmt::print("      -D [id],                  Delete a gist\n\n");
 }
 
 void printResponse(RestClient::Response res) {
@@ -112,9 +112,9 @@ int main(int argc, char** argv) {
       data = Data{getId(o, fname), fname, readInput(), readInput()};
 
     updateGist(data, url, token, fmt::format(fmt::runtime("Updating gist {} for {}\n"), data.id, *username));
-  } else if (input.argExists("-d")) { 
+  } else if (input.argExists("-D")) { 
     // Delete existing gist
-    id = input.getArg("-d");
+    id = input.getArg("-D");
     auto conn     = createConnection(url, token);
     auto res      = sendDELETE(conn, id);
     fmt::print("Response: {}\n", res.code);
