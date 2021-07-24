@@ -30,7 +30,7 @@ EOF
 }
 
 update_gist_id() {
-    ./src/gist -u "id" $update_id << EOF
+    ./src/gist -u $update_id << EOF
     Updated json file for GitHub Gists
     This is an updated test file.
 EOF
@@ -48,10 +48,10 @@ show_version() {
 #create_gist
 #create_gist_fname
 #update_gist_fname
-#update_gist_id
+update_gist_id
 #delete_gist
 #show_version
-./src/gist --help
+#./src/gist --help
 
 # fmt::print("Aur   URL : {}\n", getRaw(o, "aur-list.pkg"));
 # fmt::print("Arch  URL : {}\n", getRaw(o, "pacman-list.pkg"));

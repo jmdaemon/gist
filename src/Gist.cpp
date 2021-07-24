@@ -3,6 +3,7 @@
 
 #include <cstdlib> /* getenv */
 #include <fstream>
+#include <istream>
 
 // Libraries
 #include <toml++/toml.h>
@@ -15,16 +16,6 @@
 #include <argparse/argparse.hpp>
 
 using nlohmann::json;
-
-void showUsage() {
-  fmt::print("Usage: gist [filename]");
-  fmt::print("      -h, --help                    Show this message and exit\n");
-  fmt::print("      -v, --version,                Show gist version\n");
-  fmt::print("      -u id [id],                   Update an existing gist specified by id\n");
-  fmt::print("      -u fname [fname],             Update an existing gist specified by filename\n");
-  fmt::print("      -n [fname] [desc] [contents], Create a new gist from user input prompts for gist\n");
-  fmt::print("      -D [id],                      Delete a gist\n\n");
-}
 
 void printResponse(RestClient::Response res) {
   std::string response = json::parse(res.body).dump(4);
@@ -95,40 +86,35 @@ class MyFormatter : public CLI::Formatter {
     std::string make_option_opts(const CLI::Option *) const override {return "";}
 };
 
+auto parseID(std::string str, char delim = '/') -> std::string {
+  	std::istringstream ss(str); 
+    std::string token;
+    std::vector<std::string> tokens; 
+    while(std::getline(ss, token, delim))
+      tokens.push_back(token); 
+    std::string result = std::string(tokens.back());
+    return result;
+}
+
 int main(int argc, char** argv) { 
   CLI::App app{"Manage your GitHub gists"};
-
   app.allow_extras();
-
-  auto showVersion = [](int) { fmt::print("gist v{}.{}.{}\n", GIST_VERSION_MAJOR, GIST_VERSION_MINOR, GIST_VERSION_PATCH); };
-  app.add_flag_function("-v,--version", showVersion, "Show gist version");
-
-  std::string GIST_CONFIG = std::string(std::getenv("HOME")) + "/.config/gist/config.toml"; 
-  app.add_option("--config", GIST_CONFIG, "Specify gist config")->envname("GIST_CONFIG_HOME");
-
   app.formatter(std::make_shared<MyFormatter>());
   app.get_formatter()->column_width(40);
 
-  auto listCmd = app.add_flag("-l", "List all user gists");
-  app.excludes(listCmd);
-
-  std::string id; 
-
-  auto deleteCmd = app.add_option("-D", id, "Delete a gist");
-  app.excludes(deleteCmd);
-
-  //auto updateID = app.add_option("-u", id, "Update an existing gist");
-  //app.excludes(updateID);
-
-  //auto getExistingGist = [](std::string) { fmt::print(""); } ;
-  //app.add_flag_function("-u", getExistingGist, "Update an existing gist");
-
-  //std::string fname;
-  //auto updateFname = app.add_option("-u fname", fname, "Update an existing gist");
-  //app.excludes(updateFname);
-  
+  auto showVersion = [](int) { fmt::print("gist v{}.{}.{}\n", GIST_VERSION_MAJOR, GIST_VERSION_MINOR, GIST_VERSION_PATCH); };
+  std::string GIST_CONFIG = std::string(std::getenv("HOME")) + "/.config/gist/config.toml"; 
+  std::string deleteID;
+  std::string id;
+  bool listAllGists{false};
   bool newGist{false};
-  app.add_flag("-n", newGist, "Make a new gist from STDIN");
+
+  app.add_option("--config", GIST_CONFIG, "Specify gist config")->envname("GIST_CONFIG_HOME");
+  auto showVersionCmd = app.add_flag_function("-v,--version", showVersion, "Show gist version");
+  auto listCmd = app.add_flag("-l", listAllGists, "List all user gists")->excludes(showVersionCmd);
+  auto deleteCmd = app.add_option("-D", deleteID, "Delete a gist")->excludes(listCmd);
+  auto updateCmd = app.add_option("-u", id, "Update an existing gist")->excludes(deleteCmd);
+  auto createNewGist = app.add_flag("-n", newGist, "Make a new gist from STDIN")->excludes(updateCmd);
 
   CLI11_PARSE(app, argc, argv); 
 
@@ -144,21 +130,16 @@ int main(int argc, char** argv) {
 
   RestClient::init();
 
-  if (listCmd) {
+  if (listAllGists) {
     fmt::print("Listing all gists for {}\n", *username);
     listGists(url, *username, token);
-  //} else if (!id.empty() || !fname.empty()) { 
   } else if (!id.empty()) { 
     auto o = listGists(url, *username, token);
     Data data;
-
-    if (!id.empty())
-      data = {id, getFilename(o, id), readInput(), readInput()};
-    //else if (!fname.empty())
-      //data = Data{getId(o, fname), fname, readInput(), readInput()};
-
+    id = parseID(id);
+    data = {id, getFilename(o, id), readInput(), readInput()};
     updateGist(data, url, token, fmt::format(fmt::runtime("Updating gist {} for {}\n"), data.id, *username));
-  } else if (deleteCmd) {
+  } else if (!deleteID.empty()) {
     auto conn     = createConnection(url, token);
     auto res      = sendDELETE(conn, id);
     fmt::print("Response: {}\n", res.code);
