@@ -17,6 +17,11 @@ create_gist() {
 EOF
 }
 
+create_gist_fname() {
+    cd ..
+    ./build/src/gist TestFile.txt 
+}
+
 update_gist_fname() {
     ./src/gist -u fname "TestFile.txt" << EOF
     Updated json file for GitHub Gists
@@ -38,13 +43,14 @@ delete_gist() {
 show_version() {
     ./src/gist -v
 }
-show_version
 
 #list_gists
 #create_gist
+create_gist_fname
 #update_gist_fname
 #update_gist_id
 #delete_gist
+#show_version
 
 # fmt::print("Aur   URL : {}\n", getRaw(o, "aur-list.pkg"));
 # fmt::print("Arch  URL : {}\n", getRaw(o, "pacman-list.pkg"));

@@ -1,24 +1,32 @@
 #include "Data.h"
 #include "InputParser.h"
 #include "Version.h"
+//#include <regex>
 
 #include <cstdlib> /* getenv */
+#include <fstream>
+#include <ostream>
+#include <sstream>
 
 // Libraries
 #include <toml++/toml.h>
 #include <nlohmann/json.hpp>
 #include "restclient-cpp/connection.h"
 #include "restclient-cpp/restclient.h"
+#include "CLI/App.hpp"
+#include "CLI/Formatter.hpp"
+#include "CLI/Config.hpp"
 
 using nlohmann::json;
 
 void showUsage() {
-  fmt::print("Usage: gist [id/filename] [desc] [contents]");
-  fmt::print("      -h, --help                Show this message and exit\n");
-  fmt::print("      -v, --version,            Show gist version\n");
-  fmt::print("      -u id [id],               Update an existing gist specified by id\n");
-  fmt::print("      -u fname [fname],         Update an existing gist specified by filename\n");
-  fmt::print("      -D [id],                  Delete a gist\n\n");
+  fmt::print("Usage: gist [filename]");
+  fmt::print("      -h, --help                    Show this message and exit\n");
+  fmt::print("      -v, --version,                Show gist version\n");
+  fmt::print("      -u id [id],                   Update an existing gist specified by id\n");
+  fmt::print("      -u fname [fname],             Update an existing gist specified by filename\n");
+  fmt::print("      -n [fname] [desc] [contents], Create a new gist from user input prompts for gist\n");
+  fmt::print("      -D [id],                      Delete a gist\n\n");
 }
 
 void printResponse(RestClient::Response res) {
@@ -68,7 +76,29 @@ void updateGist(Data data, std::string url, std::optional<std::string> token, st
   printResponse(res);
 }
 
-int main(int argc, char** argv) {
+static std::string readFile(const std::filesystem::path& path) {
+    if (!std::filesystem::is_regular_file(path))
+        return { };
+
+    std::ifstream file(path, std::ios::in | std::ios::binary);
+    if (!file.is_open())
+        return { };
+
+    const std::size_t& size = std::filesystem::file_size(path);
+    std::string content(size, '\0');
+    file.read(content.data(), size);
+
+    file.close();
+    return content;
+}
+
+int main(int argc, char** argv) { 
+  CLI::App app{"Manage your GitHub gists"};
+
+  app.allow_extras();
+
+  CLI11_PARSE(app, argc, argv);
+
   InputParser input(argc, argv);
   if (input.argExists("-h") || input.argExists("--help")) {
     showUsage();
@@ -118,9 +148,8 @@ int main(int argc, char** argv) {
     auto conn     = createConnection(url, token);
     auto res      = sendDELETE(conn, id);
     fmt::print("Response: {}\n", res.code);
-  }
-  else {
-    // Create new gist
+  } else if (input.argExists("-n")) {
+    // Create new gist from STDIN
     fmt::print("Creating gist for {}\n", *username);
     auto conn = createConnection(url, token);
     Data data = Data{id, readInput(), readInput(), readInput()};
@@ -129,6 +158,20 @@ int main(int argc, char** argv) {
     std::string contents = createJson(data);
     auto res = createGist(conn, contents);
     printResponse(res);
+  }
+  else {
+    // Create new gist from file
+    fmt::print("Creating gist from file for {}\n", *username);
+    auto conn = createConnection(url, token);
+    for (auto& gist : app.remaining()) {
+      fmt::print("{}\n", gist);
+      Data data = Data{id, gist, "", readFile(gist)};
+      printData(data);
+
+      std::string contents = createJson(data);
+      auto res = createGist(conn, contents);
+      printResponse(res);
+    }
   }
 
   RestClient::disable();

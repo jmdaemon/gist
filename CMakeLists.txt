@@ -44,6 +44,8 @@ configure_file (
 #find_package(PkgConfig REQUIRED)
 #find_package(CapnProto CONFIG REQUIRED)
 
+find_package(CLI11 CONFIG REQUIRED)
+
 FetchContent_Declare(restclient-cpp
     GIT_REPOSITORY https://github.com/mrtazz/restclient-cpp
     )
