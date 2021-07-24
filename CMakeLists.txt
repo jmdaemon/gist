@@ -47,26 +47,27 @@ configure_file (
 find_package(CLI11 CONFIG REQUIRED)
 
 FetchContent_Declare(restclient-cpp
-    GIT_REPOSITORY https://github.com/mrtazz/restclient-cpp
-    )
+    GIT_REPOSITORY https://github.com/mrtazz/restclient-cpp)
 FetchContent_MakeAvailable(restclient-cpp)
 
 FetchContent_Declare(tomlplusplus
     GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git
-    GIT_TAG        v2.4.0
-)
+    GIT_TAG        v2.4.0)
 FetchContent_MakeAvailable(tomlplusplus)
 
 FetchContent_Declare(json
   GIT_REPOSITORY https://github.com/ArthurSonzogni/nlohmann_json_cmake_fetchcontent.git
   GIT_TAG v3.9.1)
-
 FetchContent_GetProperties(json)
+
 if(NOT json_POPULATED)
   FetchContent_Populate(json)
   add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
+FetchContent_Declare(argparse
+    GIT_REPOSITORY https://github.com/p-ranav/argparse)
+FetchContent_MakeAvailable(argparse)
 
 if (BUILD_TESTING)
 include(ExternalProject)

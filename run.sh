@@ -46,11 +46,12 @@ show_version() {
 
 #list_gists
 #create_gist
-create_gist_fname
+#create_gist_fname
 #update_gist_fname
 #update_gist_id
 #delete_gist
 #show_version
+./src/gist --help
 
 # fmt::print("Aur   URL : {}\n", getRaw(o, "aur-list.pkg"));
 # fmt::print("Arch  URL : {}\n", getRaw(o, "pacman-list.pkg"));

@@ -1,12 +1,8 @@
 #include "Data.h"
-#include "InputParser.h"
 #include "Version.h"
-//#include <regex>
 
 #include <cstdlib> /* getenv */
 #include <fstream>
-#include <ostream>
-#include <sstream>
 
 // Libraries
 #include <toml++/toml.h>
@@ -16,6 +12,7 @@
 #include "CLI/App.hpp"
 #include "CLI/Formatter.hpp"
 #include "CLI/Config.hpp"
+#include <argparse/argparse.hpp>
 
 using nlohmann::json;
 
@@ -92,26 +89,48 @@ static std::string readFile(const std::filesystem::path& path) {
     return content;
 }
 
+class MyFormatter : public CLI::Formatter {
+  public:
+    // Remove text between option name and description
+    std::string make_option_opts(const CLI::Option *) const override {return "";}
+};
+
 int main(int argc, char** argv) { 
   CLI::App app{"Manage your GitHub gists"};
 
   app.allow_extras();
 
-  CLI11_PARSE(app, argc, argv);
+  auto showVersion = [](int) { fmt::print("gist v{}.{}.{}\n", GIST_VERSION_MAJOR, GIST_VERSION_MINOR, GIST_VERSION_PATCH); };
+  app.add_flag_function("-v,--version", showVersion, "Show gist version");
 
-  InputParser input(argc, argv);
-  if (input.argExists("-h") || input.argExists("--help")) {
-    showUsage();
-    return 0;
-  } else if (input.argExists("-v") || input.argExists("--version")) {
-    fmt::print("gist v{}.{}.{}\n", GIST_VERSION_MAJOR, GIST_VERSION_MINOR, GIST_VERSION_PATCH);
-    return 0;
-  }
+  std::string GIST_CONFIG = std::string(std::getenv("HOME")) + "/.config/gist/config.toml"; 
+  app.add_option("--config", GIST_CONFIG, "Specify gist config")->envname("GIST_CONFIG_HOME");
 
-  std::string GIST_CONFIG = (std::getenv("GIST_CONFIG_HOME")) 
-    ? std::string(std::getenv("GIST_CONFIG_HOME")) : std::string(std::getenv("HOME")) + "/.config/gist/config.toml"; 
+  app.formatter(std::make_shared<MyFormatter>());
+  app.get_formatter()->column_width(40);
 
-  GIST_CONFIG = (input.argExists("--config")) ? input.getArg("--config") : GIST_CONFIG;
+  auto listCmd = app.add_flag("-l", "List all user gists");
+  app.excludes(listCmd);
+
+  std::string id; 
+
+  auto deleteCmd = app.add_option("-D", id, "Delete a gist");
+  app.excludes(deleteCmd);
+
+  //auto updateID = app.add_option("-u", id, "Update an existing gist");
+  //app.excludes(updateID);
+
+  //auto getExistingGist = [](std::string) { fmt::print(""); } ;
+  //app.add_flag_function("-u", getExistingGist, "Update an existing gist");
+
+  //std::string fname;
+  //auto updateFname = app.add_option("-u fname", fname, "Update an existing gist");
+  //app.excludes(updateFname);
+  
+  bool newGist{false};
+  app.add_flag("-n", newGist, "Make a new gist from STDIN");
+
+  CLI11_PARSE(app, argc, argv); 
 
   // Parse auth token
   auto config = toml::parse_file(GIST_CONFIG);
@@ -124,31 +143,26 @@ int main(int argc, char** argv) {
   fmt::print("Username : [{}]\n\n", *username);
 
   RestClient::init();
-  std::string id    = (input.argExists("id"))     ? input.getArg("id")      : "";
-  std::string fname = (input.argExists("fname"))  ? input.getArg("fname")   : "";
 
-  if (input.argExists("-l")) {
-    // List all gists
-
+  if (listCmd) {
     fmt::print("Listing all gists for {}\n", *username);
     listGists(url, *username, token);
-  } else if (input.argExists("-u")) { 
-    // Update existing gist
+  //} else if (!id.empty() || !fname.empty()) { 
+  } else if (!id.empty()) { 
     auto o = listGists(url, *username, token);
     Data data;
+
     if (!id.empty())
       data = {id, getFilename(o, id), readInput(), readInput()};
-    else if (!fname.empty())
-      data = Data{getId(o, fname), fname, readInput(), readInput()};
+    //else if (!fname.empty())
+      //data = Data{getId(o, fname), fname, readInput(), readInput()};
 
     updateGist(data, url, token, fmt::format(fmt::runtime("Updating gist {} for {}\n"), data.id, *username));
-  } else if (input.argExists("-D")) { 
-    // Delete existing gist
-    id = input.getArg("-D");
+  } else if (deleteCmd) {
     auto conn     = createConnection(url, token);
     auto res      = sendDELETE(conn, id);
     fmt::print("Response: {}\n", res.code);
-  } else if (input.argExists("-n")) {
+  } else if (newGist) {
     // Create new gist from STDIN
     fmt::print("Creating gist for {}\n", *username);
     auto conn = createConnection(url, token);
@@ -158,8 +172,7 @@ int main(int argc, char** argv) {
     std::string contents = createJson(data);
     auto res = createGist(conn, contents);
     printResponse(res);
-  }
-  else {
+  } else {
     // Create new gist from file
     fmt::print("Creating gist from file for {}\n", *username);
     auto conn = createConnection(url, token);
