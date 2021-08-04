@@ -5,10 +5,11 @@
 
 void printData(Data data) { 
   fmt::print("==== Gist Data ====\n"); 
-  fmt::print("ID           : {}\n", trim(data.id));
-  fmt::print("Filename     : {}\n", trim(data.fname));
-  fmt::print("Description  : {}\n", trim(data.desc));
-  fmt::print("Contents     : {}\n", trim(data.contents));
+  fmt::print("ID          : {}\n", trim(data.id));
+  fmt::print("Filename    : {}\n", trim(data.fname));
+  fmt::print("Description : {}\n", trim(data.desc));
+  fmt::print("Contents    : {}\n", trim(data.contents));
+  fmt::print("Public      : {}\n", data.pub);
   fmt::print("\n");
 }
 
@@ -27,8 +28,11 @@ std::string getRaw(nlohmann::json o, std::string filter) {
 std::string getId(nlohmann::json o, std::string filter) {
   for (int i=0; i < o.size(); i++) {
     std::string fname = (*o[i]["files"].begin())["filename"];
-    if (fname == filter)
+    fmt::print("fname: {}", fname);
+    if (fname == filter) {
+      fmt::print("o[i][id]: {}", o[i]["id"]);
       return o[i]["id"];
+    }
   }
   return "";
 }

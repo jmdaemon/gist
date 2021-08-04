@@ -13,7 +13,7 @@
 #include "CLI/App.hpp"
 #include "CLI/Formatter.hpp"
 #include "CLI/Config.hpp"
-#include <argparse/argparse.hpp>
+//#include <argparse/argparse.hpp>
 
 using nlohmann::json;
 
@@ -24,6 +24,7 @@ void printResponse(RestClient::Response res) {
 
 std::string createJson(Data data) {
   json o;
+  fmt::print("data.desc: {}, data.pub: {}, data.contents: {}", data.desc, data.pub, data.contents);
   o["description"]                  = data.desc;
   o["public"]                       = data.pub;
   o["files"][data.fname]["content"] = data.contents;
@@ -56,6 +57,7 @@ json listGists(std::string url, std::string username, std::optional<std::string>
 }
 
 void updateGist(Data data, std::string url, std::optional<std::string> token, std::string msg) {
+  fmt::print("In updateGist");
   fmt::print("{}\n", msg);
   printData(data);
   auto contents = createJson(data);
@@ -108,22 +110,34 @@ int main(int argc, char** argv) {
   std::string id;
   bool listAllGists{false};
   bool newGist{false};
+  bool isPriv{false};
+  std::string hasDesc = "";
+  std::string hasName = "";
 
-  app.add_option("--config", GIST_CONFIG, "Specify gist config")->envname("GIST_CONFIG_HOME");
-  auto showVersionCmd = app.add_flag_function("-v,--version", showVersion, "Show gist version");
-  auto listCmd = app.add_flag("-l", listAllGists, "List all user gists")->excludes(showVersionCmd);
-  auto deleteCmd = app.add_option("-D", deleteID, "Delete a gist")->excludes(listCmd);
-  auto updateCmd = app.add_option("-u", id, "Update an existing gist")->excludes(deleteCmd);
-  auto createNewGist = app.add_flag("-n", newGist, "Make a new gist from STDIN")->excludes(updateCmd);
+  app.add_option("--config", GIST_CONFIG, "Specify gist config for user")->envname("GIST_CONFIG_HOME");
+  app.add_option("-p", isPriv, "Makes your gist private");
+  app.add_option("-d", hasDesc, "Adds a description to your gist");
+  app.add_option("-f", hasName, "Sets the filename and syntax type");
+  
+  auto showVersionCmd = app.add_flag_function("-v,--version", showVersion, "Show gist cli version");
+  auto listCmd = app.add_flag("-l", listAllGists, "Lists all user gists");
+  auto deleteCmd = app.add_option("-D", deleteID, "Delete a gist");
+  auto updateCmd = app.add_option("-u", id, "Update an existing gist");
+  auto createNewGist = app.add_flag("-n", newGist, "Make a new gist from STDIN");
+
+  showVersionCmd->excludes("-l", "-D", "-u", "-n");
+  listCmd       ->excludes("-v", "--version", "-D", "-u", "-n");
+  deleteCmd     ->excludes("-v", "--version", "-l", "-u", "-n");
+  updateCmd     ->excludes("-v", "--version", "-l", "-D", "-n");
+  createNewGist ->excludes("-v", "--version", "-l", "-D", "-u");
 
   CLI11_PARSE(app, argc, argv); 
+  const std::string url = "https://api.github.com";
 
   // Parse auth token
   auto config = toml::parse_file(GIST_CONFIG);
   const std::optional<std::string> token      = config["user"]["token"].value<std::string>();
   const std::optional<std::string> username   = config["user"]["name"].value<std::string>();
-  const std::string url = "https://api.github.com";
-
   fmt::print("\n==== Config ====\n");
   fmt::print("Token    : [{}]\n", *token);
   fmt::print("Username : [{}]\n\n", *username);
@@ -135,9 +149,8 @@ int main(int argc, char** argv) {
     listGists(url, *username, token);
   } else if (!id.empty()) { 
     auto o = listGists(url, *username, token);
-    Data data;
     id = parseID(id);
-    data = {id, getFilename(o, id), readInput(), readInput()};
+    Data data = {id, getFilename(o, id), hasDesc, readInput(), isPriv};
     updateGist(data, url, token, fmt::format(fmt::runtime("Updating gist {} for {}\n"), data.id, *username));
   } else if (!deleteID.empty()) {
     auto conn     = createConnection(url, token);
@@ -159,7 +172,7 @@ int main(int argc, char** argv) {
     auto conn = createConnection(url, token);
     for (auto& gist : app.remaining()) {
       fmt::print("{}\n", gist);
-      Data data = Data{id, gist, "", readFile(gist)};
+      Data data = {id, gist, hasDesc, readInput(), isPriv};
       printData(data);
 
       std::string contents = createJson(data);

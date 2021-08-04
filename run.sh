@@ -2,7 +2,7 @@
 
 cd build
 
-update_id="7c5d92adac82b97705d6c25fa2e766ee"
+update_id="76639a87879f6a9b4bffafa6b15a1dc9"
 delete_id="8c118afbf19f2d035e04e8a6a87e66f8"
 
 list_gists() { 
@@ -30,8 +30,7 @@ EOF
 }
 
 update_gist_id() {
-    ./src/gist -u $update_id << EOF
-    Updated json file for GitHub Gists
+    ./src/gist -u $update_id  -d "Updated json file for GitHub Gists" << EOF
     This is an updated test file.
 EOF
 }
