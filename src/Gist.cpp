@@ -4,6 +4,7 @@
 #include <cstdlib> /* getenv */
 #include <fstream>
 #include <istream>
+#include <tuple>
 
 // Libraries
 #include <toml++/toml.h>
@@ -98,6 +99,33 @@ auto parseID(std::string str, char delim = '/') -> std::string {
     return result;
 }
 
+auto parseConfig(std::string GIST_CONFIG) {
+  auto config = toml::parse_file(GIST_CONFIG); // Parse auth token
+  const std::optional<std::string> token    = config["user"]["token"].value<std::string>();
+  const std::optional<std::string> username = config["user"]["name"].value<std::string>();
+
+  fmt::print("\n==== Config ====\n");
+  fmt::print("Token    : [{}]\n", *token);
+  fmt::print("Username : [{}]\n\n", *username);
+
+  if (token->empty()) {
+    fmt::print("Token must not be empty");
+    throw std::exception();
+  } else if (username->empty()) {
+    fmt::print("Username must not be empty");
+    throw std::exception();
+  }
+
+  auto result = std::make_tuple(token, username);
+  return result;
+}
+
+struct Options {
+  std::string deleteID, id;
+  bool listAllGists{false}, createNewGist{false}, isPriv{false};
+  std::string hasDesc{""}, hasName{""};
+};
+
 int main(int argc, char** argv) { 
   CLI::App app{"Manage your GitHub gists"};
   app.allow_extras();
@@ -106,24 +134,18 @@ int main(int argc, char** argv) {
 
   auto showVersion = [](int) { fmt::print("gist v{}.{}.{}\n", GIST_VERSION_MAJOR, GIST_VERSION_MINOR, GIST_VERSION_PATCH); };
   std::string GIST_CONFIG = std::string(std::getenv("HOME")) + "/.config/gist/config.toml"; 
-  std::string deleteID;
-  std::string id;
-  bool listAllGists{false};
-  bool newGist{false};
-  bool isPriv{false};
-  std::string hasDesc = "";
-  std::string hasName = "";
 
+  Options options;
   app.add_option("--config", GIST_CONFIG, "Specify gist config for user")->envname("GIST_CONFIG_HOME");
-  app.add_option("-p", isPriv, "Makes your gist private");
-  app.add_option("-d", hasDesc, "Adds a description to your gist");
-  app.add_option("-f", hasName, "Sets the filename and syntax type");
+  app.add_option("-p", options.isPriv, "Makes your gist private");
+  app.add_option("-d", options.hasDesc, "Adds a description to your gist");
+  app.add_option("-f", options.hasName, "Sets the filename and syntax type");
   
   auto showVersionCmd = app.add_flag_function("-v,--version", showVersion, "Show gist cli version");
-  auto listCmd = app.add_flag("-l", listAllGists, "Lists all user gists");
-  auto deleteCmd = app.add_option("-D", deleteID, "Delete a gist");
-  auto updateCmd = app.add_option("-u", id, "Update an existing gist");
-  auto createNewGist = app.add_flag("-n", newGist, "Make a new gist from STDIN");
+  auto listCmd = app.add_flag("-l"      , options.listAllGists  , "Lists all user gists");
+  auto deleteCmd = app.add_option("-D"  , options.deleteID      , "Delete a gist");
+  auto updateCmd = app.add_option("-u"  , options.id            , "Update an existing gist");
+  auto createNewGist = app.add_flag("-n", options.createNewGist , "Make a new gist from STDIN");
 
   showVersionCmd->excludes("-l", "-D", "-u", "-n");
   listCmd       ->excludes("-v", "--version", "-D", "-u", "-n");
@@ -133,34 +155,28 @@ int main(int argc, char** argv) {
 
   CLI11_PARSE(app, argc, argv); 
   const std::string url = "https://api.github.com";
-
-  // Parse auth token
-  auto config = toml::parse_file(GIST_CONFIG);
-  const std::optional<std::string> token      = config["user"]["token"].value<std::string>();
-  const std::optional<std::string> username   = config["user"]["name"].value<std::string>();
-  fmt::print("\n==== Config ====\n");
-  fmt::print("Token    : [{}]\n", *token);
-  fmt::print("Username : [{}]\n\n", *username);
+  auto [token, username] = parseConfig(GIST_CONFIG);
 
   RestClient::init();
 
-  if (listAllGists) {
+  if (options.listAllGists) {
     fmt::print("Listing all gists for {}\n", *username);
     listGists(url, *username, token);
-  } else if (!id.empty()) { 
+  //} else if (!options.id.empty()) { 
+  } else if (!options.id.empty()) { 
     auto o = listGists(url, *username, token);
-    id = parseID(id);
-    Data data = {id, getFilename(o, id), hasDesc, readInput(), isPriv};
+    std::string id = parseID(options.id);
+    Data data = {options.id, getFilename(o, id), options.hasDesc, readInput(), options.isPriv};
     updateGist(data, url, token, fmt::format(fmt::runtime("Updating gist {} for {}\n"), data.id, *username));
-  } else if (!deleteID.empty()) {
+  } else if (!options.deleteID.empty()) {
     auto conn     = createConnection(url, token);
-    auto res      = sendDELETE(conn, id);
+    auto res      = sendDELETE(conn, options.id);
     fmt::print("Response: {}\n", res.code);
-  } else if (newGist) {
+  } else if (options.createNewGist) {
     // Create new gist from STDIN
     fmt::print("Creating gist for {}\n", *username);
     auto conn = createConnection(url, token);
-    Data data = Data{id, readInput(), readInput(), readInput()};
+    Data data = Data{options.id, readInput(), readInput(), readInput()};
     printData(data);
 
     std::string contents = createJson(data);
@@ -172,7 +188,7 @@ int main(int argc, char** argv) {
     auto conn = createConnection(url, token);
     for (auto& gist : app.remaining()) {
       fmt::print("{}\n", gist);
-      Data data = {id, gist, hasDesc, readInput(), isPriv};
+      Data data = {options.id, gist, options.hasDesc, readInput(), options.isPriv};
       printData(data);
 
       std::string contents = createJson(data);
