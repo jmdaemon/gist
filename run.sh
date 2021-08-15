@@ -2,8 +2,8 @@
 
 cd build
 
-update_id="76639a87879f6a9b4bffafa6b15a1dc9"
-delete_id="8c118afbf19f2d035e04e8a6a87e66f8"
+update_id="444bb83f7cd318df267322d3283fe392"
+delete_id="7c5d92adac82b97705d6c25fa2e766ee"
 
 list_gists() { 
     ./src/gist -l
@@ -43,12 +43,12 @@ show_version() {
     ./src/gist -v
 }
 
-#list_gists
-#create_gist
+list_gists
+create_gist
 #create_gist_fname
 #update_gist_fname
 update_gist_id
-#delete_gist
+delete_gist
 #show_version
 #./src/gist --help
 
