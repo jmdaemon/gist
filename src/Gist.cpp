@@ -45,11 +45,12 @@ RestClient::Connection* connect(std::string url, std::optional<std::string> toke
   return conn;
 }
 
-constexpr unsigned int hash(const char *s, int off = 0) {                        
-    return !s[off] ? 5381 : (hash(s, off+1)*33) ^ s[off];                           
-}                                                                                
+constexpr unsigned int hash(const char *s, int off = 0) {
+    return !s[off] ? 5381 : (hash(s, off+1)*33) ^ s[off];
+}
 
-auto send(RestClient::Connection* conn, std::string cmd, std::string id="", std::string contents="") {
+auto send(std::string url, std::optional<std::string> token, std::string cmd, std::string id="", std::string contents="") {
+  auto conn = connect(url, token);
   switch(hash(cmd.c_str())) {
     case hash("GET")    : return conn->get("/gists");
     case hash("POST")   : return conn->post("/gists", contents);
@@ -59,20 +60,29 @@ auto send(RestClient::Connection* conn, std::string cmd, std::string id="", std:
   }
 }
 
+auto send(std::string url, std::optional<std::string> token, std::string cmd, Data data) {
+  auto conn = connect(url, token);
+  switch(hash(cmd.c_str())) {
+    case hash("GET")    : return conn->get("/gists");
+    case hash("POST")   : return conn->post("/gists", createJson(data));
+    case hash("DELETE") : return conn->del("/gists/" + data.id);
+    case hash("PATCH")  : return conn->patch("/gists/" + data.id, createJson(data));
+    default             : return RestClient::Response();
+  }
+}
+
 void listGists(std::string url, std::string username, std::optional<std::string> token) {
-  printResponse(send(connect(url + "/users/" + username, token), "GET"));
+  printResponse(send(url + "/users/" + username, token, "GET"));
 }
 
 json getGists(std::string url, std::string username, std::optional<std::string> token) {
-  auto conn = connect(url + "/users/" + username, token);
-  auto o = json::parse(send(conn, "GET").body);
+  auto o = json::parse(send(url + "/users/" + username, token, "GET").body);
   return o;
 }
 
-void updateGist(Data data, std::string url, std::optional<std::string> token, std::string msg) {
-  fmt::print("{}\n", msg);
+void updateGist(Data data, std::string url, std::optional<std::string> token) {
   printData(data);
-  auto res      = send(connect(url, token), "PATCH", data.id, createJson(data));
+  auto res = send(url, token, "PATCH", data);
   printResponse(res);
 }
 
@@ -163,7 +173,6 @@ int main(int argc, char** argv) {
   auto listCmd = app.add_flag("-l"      , options.listAllGists  , "Lists all user gists");
   auto deleteCmd = app.add_option("-D"  , options.deleteID      , "Delete a gist");
   auto updateCmd = app.add_option("-u"  , options.id            , "Update an existing gist");
-  //auto updateCmd = app.add_option("-u"  , options.gist          , "Update an existing gist");
   auto createNewGist = app.add_flag("-n", options.createNewGist , "Make a new gist from STDIN");
 
   showVersionCmd->excludes("-l", "-D", "-u", "-n");
@@ -183,40 +192,30 @@ int main(int argc, char** argv) {
     return cleanup();
   }
 
-  //if (!std::get<0>(options.gist).empty()) {
   if (!options.id.empty()) {
-    auto o = getGists(url, *username, token);
     std::string id = parseID(options.id);
-    Data data = {options.id, getFilename(o, id), options.hasDesc, readInput(), options.isPriv};
-    //Data data = {options.id, getFilename(o, id), options.hasDesc, readFile(std::get<1>(options.gist)), options.isPriv};
-    updateGist(data, url, token, fmt::format(fmt::runtime("Updating gist {} for {}\n"), data.id, *username));
+    Data data = {options.id, getFilename(getGists(url, *username, token), id), options.hasDesc, readInput(), options.isPriv};
+    updateGist(data, url, token);
     return cleanup();
   }
 
   if (!options.deleteID.empty()) {
-    send(connect(url, token), "DELETE", options.id);
+    send(url, token, "DELETE", options.id);
     return cleanup();
   }
 
   if (options.createNewGist) {
     // Create new gist from STDIN
     Data data = Data{options.id, readInput(), readInput(), readInput()};
-    printData(data);
-    auto res = send(connect(url, token), "POST", createJson(data));
-    printResponse(res);
+    printResponse(send(url, token, "POST", data));
     return cleanup();
   } 
 
   // Create new gist from files
-  auto conn = connect(url, token);
   for (auto& gist : app.remaining()) {
     fmt::print("{}\n", gist);
     Data data = {options.id, gist, options.hasDesc, readInput(), options.isPriv};
-    printData(data);
-
-    std::string contents = createJson(data);
-    auto res = send(conn, "POST", contents);
-    printResponse(res);
+    printResponse(send(url, token, "POST", data));
   }
   return cleanup();
 }
