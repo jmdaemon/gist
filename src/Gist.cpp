@@ -38,7 +38,7 @@ auto createHeaders(std::optional<std::string> token) {
   return headers;
 }
 
-RestClient::Connection* createConnection(std::string url, std::optional<std::string> token) {
+RestClient::Connection* connect(std::string url, std::optional<std::string> token) {
   RestClient::Connection* conn = new RestClient::Connection(url);
   conn->FollowRedirects(true);
   conn->SetHeaders(createHeaders(token)); 
@@ -51,7 +51,7 @@ auto sendDELETE(RestClient::Connection* conn, std::string gistID) { return conn-
 auto createGist(RestClient::Connection* conn, std::string contents) { return conn->post("/gists", contents); }
 
 json listGists(std::string url, std::string username, std::optional<std::string> token) {
-  auto conn = createConnection(url + "/users/" + username, token);
+  auto conn = connect(url + "/users/" + username, token);
   auto o = json::parse(sendGET(conn).body);
   return o;
 }
@@ -61,7 +61,7 @@ void updateGist(Data data, std::string url, std::optional<std::string> token, st
   fmt::print("{}\n", msg);
   printData(data);
   auto contents = createJson(data);
-  auto conn     = createConnection(url, token);
+  auto conn     = connect(url, token);
   auto res      = sendPATCH(conn, data.id, contents);
   printResponse(res);
 }
@@ -168,11 +168,8 @@ int main(int argc, char** argv) {
   RestClient::init();
 
   if (options.listAllGists) {
-    fmt::print("Listing all gists for {}\n", *username);
     listGists(url, *username, token);
-    return 0;
-  //} else if (!options.id.empty()) { 
-  //} else if (!options.id.empty()) { 
+    return cleanup();
   }
 
   //if (!std::get<0>(options.gist).empty()) {
@@ -186,28 +183,21 @@ int main(int argc, char** argv) {
   }
 
   if (!options.deleteID.empty()) {
-    auto conn     = createConnection(url, token);
-    auto res      = sendDELETE(conn, options.id);
-    fmt::print("Response: {}\n", res.code);
+    sendDELETE(connect(url, token), options.id);
     return cleanup();
   }
 
   if (options.createNewGist) {
     // Create new gist from STDIN
-    fmt::print("Creating gist for {}\n", *username);
-    auto conn = createConnection(url, token);
     Data data = Data{options.id, readInput(), readInput(), readInput()};
     printData(data);
-
-    std::string contents = createJson(data);
-    auto res = createGist(conn, contents);
+    auto res = createGist(connect(url, token), createJson(data));
     printResponse(res);
     return cleanup();
   } 
 
   // Create new gist from files
-  fmt::print("Creating gist from file for {}\n", *username);
-  auto conn = createConnection(url, token);
+  auto conn = connect(url, token);
   for (auto& gist : app.remaining()) {
     fmt::print("{}\n", gist);
     Data data = {options.id, gist, options.hasDesc, readInput(), options.isPriv};
