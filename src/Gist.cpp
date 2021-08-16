@@ -45,23 +45,14 @@ RestClient::Connection* connect(std::string url, std::optional<std::string> toke
   return conn;
 }
 
+struct Config { std::string url, username, token; };
+
 constexpr unsigned int hash(const char *s, int off = 0) {
     return !s[off] ? 5381 : (hash(s, off+1)*33) ^ s[off];
 }
 
-auto send(std::string url, std::optional<std::string> token, std::string cmd, std::string id="", std::string contents="") {
-  auto conn = connect(url, token);
-  switch(hash(cmd.c_str())) {
-    case hash("GET")    : return conn->get("/gists");
-    case hash("POST")   : return conn->post("/gists", contents);
-    case hash("DELETE") : return conn->del("/gists/" + id);
-    case hash("PATCH")  : return conn->patch("/gists/" + id, contents);
-    default             : return RestClient::Response();
-  }
-}
-
-auto send(std::string url, std::optional<std::string> token, std::string cmd, Data data) {
-  auto conn = connect(url, token);
+auto send(std::string cmd, Config config, Data data) {
+  auto conn = connect(config.url, config.token);
   switch(hash(cmd.c_str())) {
     case hash("GET")    : return conn->get("/gists");
     case hash("POST")   : return conn->post("/gists", createJson(data));
@@ -71,19 +62,13 @@ auto send(std::string url, std::optional<std::string> token, std::string cmd, Da
   }
 }
 
-void listGists(std::string url, std::string username, std::optional<std::string> token) {
-  printResponse(send(url + "/users/" + username, token, "GET"));
+json getGists(Config& config) {
+  config.url = config.url + "/users/" + config.username;
+  return json::parse(send("GET", config, {}).body);
 }
 
-json getGists(std::string url, std::string username, std::optional<std::string> token) {
-  auto o = json::parse(send(url + "/users/" + username, token, "GET").body);
-  return o;
-}
-
-void updateGist(Data data, std::string url, std::optional<std::string> token) {
-  printData(data);
-  auto res = send(url, token, "PATCH", data);
-  printResponse(res);
+void updateGist(Data& data, Config& config) {
+  printResponse(send("PATCH", config, data));
 }
 
 static std::string readFile(const std::filesystem::path& path) {
@@ -97,7 +82,6 @@ static std::string readFile(const std::filesystem::path& path) {
     const std::size_t& size = std::filesystem::file_size(path);
     std::string content(size, '\0');
     file.read(content.data(), size);
-
     file.close();
     return content;
 }
@@ -119,8 +103,9 @@ auto parseID(std::string str, char delim = '/') -> std::string {
   return result;
 }
 
- // Parse auth token
+// Parse auth token
 auto parseConfig(std::string GIST_CONFIG) {
+  const std::string url = "https://api.github.com";
   auto config = toml::parse_file(GIST_CONFIG);
   const std::optional<std::string> token    = config["user"]["token"].value<std::string>();
   const std::optional<std::string> username = config["user"]["name"].value<std::string>();
@@ -137,9 +122,7 @@ auto parseConfig(std::string GIST_CONFIG) {
     fmt::print("Username must not be empty");
     throw std::exception();
   }
-
-  auto result = std::make_tuple(token, username);
-  return result;
+  return Config{url, *username, *token};
 }
 
 struct Options {
@@ -182,40 +165,41 @@ int main(int argc, char** argv) {
   createNewGist ->excludes("-v", "--version", "-l", "-D", "-u");
 
   CLI11_PARSE(app, argc, argv); 
-  const std::string url = "https://api.github.com";
-  auto [token, username] = parseConfig(GIST_CONFIG);
-
+  auto config = parseConfig(GIST_CONFIG);
   RestClient::init();
 
   if (options.listAllGists) {
-    listGists(url, *username, token);
+    fmt::print("{}\n", (getGists(config).dump(4)));
     return cleanup();
   }
 
   if (!options.id.empty()) {
     std::string id = parseID(options.id);
-    Data data = {options.id, getFilename(getGists(url, *username, token), id), options.hasDesc, readInput(), options.isPriv};
-    updateGist(data, url, token);
+    std::string fname = app.remaining()[0];
+    //std::string fname = getFilename(getGists(config), id);
+    //Data data = {options.id, getFilename(getGists(config), id), options.hasDesc, readInput(), options.isPriv};
+    //Data data = {id, fname, options.hasDesc, readFile(fname), options.isPriv};
+    Data data = {id, fname, options.hasDesc, readFile(fname), options.isPriv};
+    updateGist(data, config);
     return cleanup();
   }
 
   if (!options.deleteID.empty()) {
-    send(url, token, "DELETE", options.id);
+    send("DELETE", config, Data{options.id});
     return cleanup();
   }
 
+  // Create new gist from STDIN
   if (options.createNewGist) {
-    // Create new gist from STDIN
     Data data = Data{options.id, readInput(), readInput(), readInput()};
-    printResponse(send(url, token, "POST", data));
+    printResponse(send("POST", config, data));
     return cleanup();
   } 
 
   // Create new gist from files
   for (auto& gist : app.remaining()) {
-    fmt::print("{}\n", gist);
-    Data data = {options.id, gist, options.hasDesc, readInput(), options.isPriv};
-    printResponse(send(url, token, "POST", data));
+    Data data = {options.id, gist, options.hasDesc, readFile(gist), options.isPriv};
+    printResponse(send("POST", config, data));
   }
   return cleanup();
 }
