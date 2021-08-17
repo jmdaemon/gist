@@ -138,7 +138,7 @@ int cleanup() {
   return 0;
 }
 
-std::string replaceAll(std::string str, const std::string& from, const std::string& to) {
+std::string replaceAll(std::string str, const std::string& from = "-", const std::string& to = ":") {
     size_t start_pos = 0;
     while((start_pos = str.find(from, start_pos)) != std::string::npos) {
         str.replace(start_pos, from.length(), to);
@@ -152,52 +152,34 @@ std::string strip(std::string s) {
   return s;
 }
 
-int searchDate(json o, Options options) {
-  for (int i = 0; i < o.size(); i++) {
-    std::string updated_at = replaceAll(options.updated_at + "T00:00:00Z", "-", ":");
-    std::string gist_date  = replaceAll(o[i]["updated_at"], "-", ":");
-    if (gist_date > updated_at) { // Retrieve gists later than created_at
-      if (!options.raw)
-        fmt::print("{}\n", o[i].dump(4));
-      for (auto& gist : o["files"]) {
-        fmt::print("{}\n", strip(gist["raw_url"]));
-      }
+void search(json& o, Options options) {
+    if (!options.raw) {
+      fmt::print("{}\n", o.dump(4));
+      return;
     }
-  }
+    std::for_each(o["files"].begin(), o["files"].end(), [] (json& gist) { fmt::print("{}\n", strip(gist["raw_url"])); });
+}
+
+int searchDate(json o, Options options, std::string date, std::string gistDate) {
+  std::for_each(o.begin(), o.end(), std::bind([] (json o, Options options, std::string date, std::string gistDate) {
+    std::string gist_date  = replaceAll(gistDate);
+    if (gist_date > date) { search(o, options); } // Retrieve gists later than date
+    } , std::placeholders::_1, options, date, gistDate));
   return cleanup();
 }
 
+
 inline int searchID(json o, Options options) {
-      std::for_each(o.begin(), o.end(), std::bind([] (json o, Options options) {
-            if (o["id"] == options.searchID) {
-              if (!options.raw) {
-              fmt::print("{}\n", o.dump(4));
-              return;
-              }
-              //std::for_each(o["files"].begin(), o["files"].end(),
-                  //std::bind([] (json gist) {
-                    //fmt::print("{}\n", strip(gist["raw_url"]));
-                    //}));
-              for (auto& gist : o["files"]) { 
-                fmt::print("{}\n", strip(gist["raw_url"]));
-                return;
-                }
-            }} , std::placeholders::_1, options));
+  std::for_each(o.begin(), o.end(), std::bind([] (json o, Options options) {
+    if (o["id"] == options.searchID) { search(o, options); } return;
+    } , std::placeholders::_1, options));
   return cleanup();
 }
 
 inline int searchFile(json o, Options options) {
-      std::for_each(o.begin(), o.end(), std::bind([] (json o, Options options) {
-            std::string result((*o["files"].begin())["filename"]);
-              if (result == options.hasName) {
-              if (!options.raw)
-                fmt::print("{}\n", o.dump(4));
-
-              for (auto& gist : o["files"]) { 
-                fmt::print("{}\n", strip(gist["raw_url"]));
-                return;
-                }
-            }}, std::placeholders::_1, options));
+  std::for_each(o.begin(), o.end(), std::bind([] (json o, Options options) {
+        for (auto& file : o["files"]) { if (file["filename"] == options.hasName) search(o, options); }
+        }, std::placeholders::_1, options));
   return cleanup();
 }
 
@@ -255,8 +237,12 @@ int main(int argc, char** argv) {
       return searchFile(o, options);
     }
 
-    if (!options.created_at.empty() || !options.updated_at.empty()) {
-      return searchDate(o, options);
+    if (!options.created_at.empty()) {
+      return searchDate(o, options, replaceAll(options.created_at + "T00:00:00Z"), "created_at");
+    }
+
+    if(!options.updated_at.empty()) {
+      return searchDate(o, options, replaceAll(options.updated_at + "T00:00:00Z"), "updated_at");
     }
     return cleanup();
   }

@@ -37,6 +37,14 @@ show_version() {
     $bin -v
 }
 
+test_gist() {
+    msg=$1
+    cmd=$2
+    echo "${msg}"
+    echo "Executing : ${cmd}"
+    $cmd
+}
+
 #list_gists
 #create_gist
 #new_gist
@@ -47,16 +55,17 @@ show_version() {
 #$bin --help
 
 ## Search
-#$bin search -i "$update_id"
-$bin search -i "$update_id" -r
-#$bin search -f "$testfile"
-#$bin search -c "2021-08-13"
-#$bin search -c "2021-07-14"
-#$bin search -d "2021-08-16"
+$bin search -i "$update_id"
+test_gist "Search ID" "$bin search -i "$update_id""
+test_gist "Search ID Raw" "$bin search -i "$update_id" -r"
+test_gist "Search ID Filename" "$bin search -f "$testfile""
+test_gist "Search ID Creation Date 1" "$bin search -c "2021-08-13""
+test_gist "Search ID Creation Date 2" "$bin search -c "2021-07-14""
+test_gist "Search ID Creation Date 1 Raw" "$bin search -c "2021-08-13" -r"
+test_gist "Search ID Creation Date 2 Raw" "$bin search -c "2021-07-14" -r"
+test_gist "Search ID Last Modified" "$bin search -d "2021-08-16""
 
 # fmt::print("Aur   URL : {}\n", getRaw(o, "aur-list.pkg"));
 # fmt::print("Arch  URL : {}\n", getRaw(o, "pacman-list.pkg"));
 # fmt::print("Aur   ID  : {}\n", getId(o, "aur-list.pkg"));
 # fmt::print("Arch  ID  : {}\n", getId(o, "pacman-list.pkg"));
-
-cd ..
