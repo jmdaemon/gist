@@ -6,8 +6,6 @@
 #include <fstream>
 #include <istream>
 #include <tuple>
-//#include <time.h> [> difftime <]
-//#include <chrono>
 
 // Libraries
 #include <toml++/toml.h>
@@ -129,8 +127,8 @@ auto parseConfig(std::string GIST_CONFIG) {
 }
 
 struct Options {
-  std::string deleteID, id, searchID, created_at, updated_at, regex;
-  bool listAllGists{false}, createNewGist{false}, isPriv{false};
+  std::string deleteID, id, searchID, created_at, updated_at;
+  bool listAllGists{false}, createNewGist{false}, isPriv{false}, raw{false};
   std::string searchGists{""}, hasDesc{""}, hasName{""};
   std::tuple<std::string, std::string> gist{ "", "" };
 };
@@ -149,35 +147,57 @@ std::string replaceAll(std::string str, const std::string& from, const std::stri
     return str;
 }
 
+std::string strip(std::string s) {
+  s.erase(remove( s.begin(), s.end(), '\"' ),s.end());
+  return s;
+}
+
 int searchDate(json o, Options options) {
   for (int i = 0; i < o.size(); i++) {
     std::string updated_at = replaceAll(options.updated_at + "T00:00:00Z", "-", ":");
     std::string gist_date  = replaceAll(o[i]["updated_at"], "-", ":");
     if (gist_date > updated_at) { // Retrieve gists later than created_at
-      fmt::print("{}\n", o[i].dump(4));
+      if (!options.raw)
+        fmt::print("{}\n", o[i].dump(4));
+      for (auto& gist : o["files"]) {
+        fmt::print("{}\n", strip(gist["raw_url"]));
+      }
     }
   }
   return cleanup();
 }
 
-int searchID(json o, Options options) {
-  for (int i = 0; i < o.size(); i++) {
-    if (o[i]["id"] == options.searchID) {
-      fmt::print("{}\n", o[i].dump(4));
-      return cleanup();
-    }
-  }
+inline int searchID(json o, Options options) {
+      std::for_each(o.begin(), o.end(), std::bind([] (json o, Options options) {
+            if (o["id"] == options.searchID) {
+              if (!options.raw) {
+              fmt::print("{}\n", o.dump(4));
+              return;
+              }
+              //std::for_each(o["files"].begin(), o["files"].end(),
+                  //std::bind([] (json gist) {
+                    //fmt::print("{}\n", strip(gist["raw_url"]));
+                    //}));
+              for (auto& gist : o["files"]) { 
+                fmt::print("{}\n", strip(gist["raw_url"]));
+                return;
+                }
+            }} , std::placeholders::_1, options));
   return cleanup();
 }
 
-int searchFile(json o, Options options) {
-  for (int i = 0; i < o.size(); i++) {
-    std::string result((*o[i]["files"].begin())["filename"]);
-    if (result == options.hasName) {
-      fmt::print("{}\n", o[i].dump(4));
-      return cleanup();
-    }
-  }
+inline int searchFile(json o, Options options) {
+      std::for_each(o.begin(), o.end(), std::bind([] (json o, Options options) {
+            std::string result((*o["files"].begin())["filename"]);
+              if (result == options.hasName) {
+              if (!options.raw)
+                fmt::print("{}\n", o.dump(4));
+
+              for (auto& gist : o["files"]) { 
+                fmt::print("{}\n", strip(gist["raw_url"]));
+                return;
+                }
+            }}, std::placeholders::_1, options));
   return cleanup();
 }
 
@@ -202,12 +222,12 @@ int main(int argc, char** argv) {
   auto updateCmd = app.add_option("-u"  , options.id            , "Update an existing gist");
   auto createNewGist = app.add_flag("-n", options.createNewGist , "Make a new gist from STDIN");
   auto search = app.add_subcommand("search", "Search user gists");
+  search->add_flag("-r, --raw", options.raw, "Output raw url of gist");
   search->add_option("-p", options.isPriv, "Search only private gists");
   search->add_option("-i, --id", options.searchID, "Search by gist id");
   search->add_option("-f, --filename", options.hasName, "Search by gist filename");
   search->add_option("-c, --creation-date", options.created_at, "Search by date created");
   search->add_option("-d, --date", options.updated_at, "Search by last modified date");
-  search->add_option("-r, --regex", options.regex, "Search by regex");
 
   showVersionCmd->excludes("-l", "-D", "-u", "-n");
   listCmd       ->excludes("-v", "--version", "-D", "-u", "-n");
@@ -224,19 +244,10 @@ int main(int argc, char** argv) {
     return cleanup();
   }
 
-  //if (!options.searchGists.empty()) {
   if (*search) {
     auto o = getGists(config);
 
     if (!options.searchID.empty()) {
-
-      //std::for_each(o.begin(), o.end(), std::bind(
-            //[] (json o, Options options) {
-            //if (o["id"] == options.searchID) {
-              //fmt::print("{}\n", o.dump(4));
-              //return;
-            //}} , std::placeholders::_1, options));
-      //return cleanup();
       return searchID(o, options);
     }
 
@@ -253,8 +264,6 @@ int main(int argc, char** argv) {
   if (!options.id.empty()) {
     std::string id = parseID(options.id);
     std::string fname = app.remaining()[0].empty() ? app.remaining()[0]: "gistFile1.txt";
-    //std::string fname = getFilename(getGists(config), id);
-    //Data data = {options.id, getFilename(getGists(config), id), options.hasDesc, readInput(), options.isPriv};
     Data data = {id, fname, options.hasDesc, readFile(fname), options.isPriv};
     updateGist(data, config);
     return cleanup();
@@ -267,10 +276,10 @@ int main(int argc, char** argv) {
 
   // Create new gist from STDIN
   if (options.createNewGist) {
-    Data data = Data{options.id, readInput(), readInput(), readInput()};
+    Data data = Data{options.id, readInput("Gist file name"), readInput("Gist description"), readInput("Gist contents")};
     printResponse(send("POST", config, data));
     return cleanup();
-  } 
+  }
 
   // Create new gist from files
   for (auto& gist : app.remaining()) {

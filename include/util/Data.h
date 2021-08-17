@@ -22,9 +22,7 @@ struct Data {
 void printData(Data data);
 void serialize(nlohmann::json data, std::string filename);
 std::string getRaw(nlohmann::json o, std::string filter);
-std::string getId(nlohmann::json o, std::string filter);
-std::string getFilename(nlohmann::json o, std::string id);
-std::string readInput();
+std::string readInput(std::string prompt = "");
 
 inline std::string &ltrim(std::string &s);
 inline std::string &rtrim(std::string &s);
