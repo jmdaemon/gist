@@ -50,10 +50,17 @@ show_version() {
 #new_gist
 #update_gist_fname
 #update_gist_id
-update_gist_url
+#update_gist_url
 #delete_gist
 #show_version
 #$bin --help
+
+## Search
+$bin search -i "$update_id"
+#$bin search -f "TestFile.txt"
+#$bin search -c "2021-08-13"
+#$bin search -c "2021-07-14"
+#$bin search -d "2021-08-16"
 
 # fmt::print("Aur   URL : {}\n", getRaw(o, "aur-list.pkg"));
 # fmt::print("Arch  URL : {}\n", getRaw(o, "pacman-list.pkg"));
