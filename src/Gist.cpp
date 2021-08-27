@@ -249,8 +249,9 @@ int main(int argc, char** argv) {
 
   if (!options.id.empty()) {
     std::string id = parseID(options.id);
-    std::string fname = app.remaining()[0].empty() ? app.remaining()[0]: "gistFile1.txt";
+    std::string fname = (!app.remaining()[0].empty()) ? app.remaining()[0]: "gistFile1.txt";
     Data data = {id, fname, options.hasDesc, readFile(fname), options.isPriv};
+    //printData(data);
     updateGist(data, config);
     return cleanup();
   }
