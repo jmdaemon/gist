@@ -52,10 +52,10 @@ constexpr unsigned int hash(const char *s, int off = 0) {
     return !s[off] ? 5381 : (hash(s, off+1)*33) ^ s[off];
 }
 
-auto send(std::string cmd, Config config, Data data) {
+auto send(std::string cmd, Config config, Data data, std::string query="") {
   auto conn = connect(config.url, config.token);
   switch(hash(cmd.c_str())) {
-    case hash("GET")    : return conn->get("/gists");
+    case hash("GET")    : return conn->get(std::string("/gists") + query);
     case hash("POST")   : return conn->post("/gists", createJson(data));
     case hash("DELETE") : return conn->del("/gists/" + data.id);
     case hash("PATCH")  : return conn->patch("/gists/" + data.id, createJson(data));
@@ -63,9 +63,9 @@ auto send(std::string cmd, Config config, Data data) {
   }
 }
 
-json getGists(Config& config) {
+json getGists(Config& config, std::string query="?per_page=100&page=1") {
   config.url = config.url + "/users/" + config.username;
-  return json::parse(send("GET", config, {}).body);
+  return json::parse(send("GET", config, {}, query).body);
 }
 
 void updateGist(Data& data, Config& config) {

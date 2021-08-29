@@ -46,12 +46,7 @@ test_gist_search() {
 }
 
 # Gist Tests
-#test_gist_bin
+test_gist_bin
 
 # Gist Search Tests
 test_gist_search
-
-# fmt::print("Aur   URL : {}\n", getRaw(o, "aur-list.pkg"));
-# fmt::print("Arch  URL : {}\n", getRaw(o, "pacman-list.pkg"));
-# fmt::print("Aur   ID  : {}\n", getId(o, "aur-list.pkg"));
-# fmt::print("Arch  ID  : {}\n", getId(o, "pacman-list.pkg"));
