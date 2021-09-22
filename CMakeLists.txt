@@ -94,8 +94,13 @@ set(CMAKE_C_FLAGS -fdiagnostics-color=always)
 add_subdirectory(src)
 
 if(BUILD_TESTING)
-  add_subdirectory(test)
+  add_subdirectory(tests)
 endif()
+
+# Build .deb file
+include(CPack)
+set(CPACK_GENERATOR "DEB")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Joseph Diza") # required
 
 set(CMAKE_INSTALL_PREFIX /usr/local)
 install(TARGETS ${OGGEX} DESTINATION bin)
