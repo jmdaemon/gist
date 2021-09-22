@@ -44,10 +44,12 @@ Implement:
 
 Miscellaneous Features:
 
-- Create Gist Class with gist configurations
-    - Pass gist object around to send requests
+- Create CI/CD Pipeline
+    - Automatically save and generate release artefacts
+    - Automatically deploy artefacts to GitHub
 - Create unit tests with doctest
     - Mock Gists REST API with seznam/httpmockserver
 - Create project docs with pmarsceill/just-the-docs
-- Show binary version with --version
+- Create Gist Class with gist configurations
+    - Pass gist object around to send requests
 - Show verbose output with --verbose

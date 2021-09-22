@@ -5,10 +5,11 @@
 
 void printData(Data data) { 
   fmt::print("==== Gist Data ====\n"); 
-  fmt::print("ID           : {}\n", trim(data.id));
-  fmt::print("Filename     : {}\n", trim(data.fname));
-  fmt::print("Description  : {}\n", trim(data.desc));
-  fmt::print("Contents     : {}\n", trim(data.contents));
+  fmt::print("ID          : {}\n", trim(data.id));
+  fmt::print("Filename    : {}\n", trim(data.fname));
+  fmt::print("Description : {}\n", trim(data.desc));
+  fmt::print("Contents    : {}\n", trim(data.contents));
+  fmt::print("Public      : {}\n", data.pub);
   fmt::print("\n");
 }
 
@@ -24,32 +25,14 @@ std::string getRaw(nlohmann::json o, std::string filter) {
   return "";
 }
 
-std::string getId(nlohmann::json o, std::string filter) {
-  for (int i=0; i < o.size(); i++) {
-    std::string fname = (*o[i]["files"].begin())["filename"];
-    if (fname == filter)
-      return o[i]["id"];
-  }
-  return "";
-}
-
-std::string getFilename(nlohmann::json o, std::string id) { 
-  for (int i = 0; i < o.size(); i++) {
-    if (nlohmann::json(o[i])["id"] == id) {
-      std::string result( (*o[i]["files"].begin())["filename"]);
-      return result;
-    }
-  }
-  return "";
-}
-
 void serialize(nlohmann::json data, std::string filename) {
   auto out = fmt::output_file(filename); 
   out.print("{}\n", data.dump(4));
 }
 
-std::string readInput() {
+std::string readInput(std::string prompt) {
   std::string input = "";
+  fmt::print("{}: ", prompt);
   while (std::getline(std::cin, input)) {
     return input;
   }

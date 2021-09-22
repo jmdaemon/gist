@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19) # CMake 3.9
 
 project (gist
-    VERSION 0.1.0
+    VERSION 0.2.0
     DESCRIPTION "Gist CLI tool to interact with the Gist REST api"
     LANGUAGES CXX
     )
@@ -44,27 +44,30 @@ configure_file (
 #find_package(PkgConfig REQUIRED)
 #find_package(CapnProto CONFIG REQUIRED)
 
+find_package(CLI11 CONFIG REQUIRED)
+
 FetchContent_Declare(restclient-cpp
-    GIT_REPOSITORY https://github.com/mrtazz/restclient-cpp
-    )
+    GIT_REPOSITORY https://github.com/mrtazz/restclient-cpp)
 FetchContent_MakeAvailable(restclient-cpp)
 
 FetchContent_Declare(tomlplusplus
     GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git
-    GIT_TAG        v2.4.0
-)
+    GIT_TAG        v2.4.0)
 FetchContent_MakeAvailable(tomlplusplus)
 
 FetchContent_Declare(json
   GIT_REPOSITORY https://github.com/ArthurSonzogni/nlohmann_json_cmake_fetchcontent.git
   GIT_TAG v3.9.1)
-
 FetchContent_GetProperties(json)
+
 if(NOT json_POPULATED)
   FetchContent_Populate(json)
   add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
+FetchContent_Declare(argparse
+    GIT_REPOSITORY https://github.com/p-ranav/argparse)
+FetchContent_MakeAvailable(argparse)
 
 if (BUILD_TESTING)
 include(ExternalProject)
@@ -91,8 +94,13 @@ set(CMAKE_C_FLAGS -fdiagnostics-color=always)
 add_subdirectory(src)
 
 if(BUILD_TESTING)
-  add_subdirectory(test)
+  add_subdirectory(tests)
 endif()
+
+# Build .deb file
+include(CPack)
+set(CPACK_GENERATOR "DEB")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Joseph Diza") # required
 
 set(CMAKE_INSTALL_PREFIX /usr/local)
 install(TARGETS ${OGGEX} DESTINATION bin)
