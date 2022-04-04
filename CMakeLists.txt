@@ -46,10 +46,7 @@ configure_file (
 
 find_package(CLI11 CONFIG REQUIRED)
 
-FetchContent_Declare(restclient-cpp
-    GIT_REPOSITORY https://github.com/mrtazz/restclient-cpp)
-FetchContent_MakeAvailable(restclient-cpp)
-
+include(restclient-cpp)
 FetchContent_Declare(tomlplusplus
     GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git
     GIT_TAG        v2.4.0)
