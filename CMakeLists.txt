@@ -49,12 +49,9 @@ find_package(CLI11 CONFIG REQUIRED)
 include(restclient-cpp)
 include(tomlplusplus)
 include(json)
-
-FetchContent_Declare(argparse
-    GIT_REPOSITORY https://github.com/p-ranav/argparse)
-FetchContent_MakeAvailable(argparse)
-
+include(argparse)
 include(doctest)
+
 set(CMAKE_CXX_FLAGS -fdiagnostics-color=always)
 set(CMAKE_C_FLAGS -fdiagnostics-color=always)
 
