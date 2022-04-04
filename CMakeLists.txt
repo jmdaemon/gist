@@ -14,6 +14,13 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set_property(GLOBAL PROPERTY USE_FOLDERS ON) 
 endif()
 
+if (NOT COLOR)
+    # Don't use colored output
+else()
+    # Include colored output by default
+    include(Color)
+endif()
+
 ### Require out-of-source builds
 file(TO_CMAKE_PATH "${PROJECT_BINARY_DIR}/CMakeLists.txt" LOC_PATH)
 if(EXISTS "${LOC_PATH}")
@@ -43,14 +50,14 @@ include(json)
 include(argparse)
 include(doctest)
 
-include(Color)
-
+# Add subdirectories
 add_subdirectory(src)
 
 if(BUILD_TESTING)
   add_subdirectory(tests)
 endif()
 
+# Package for debian
 include(Debian)
 
 set(CMAKE_INSTALL_PREFIX /usr/local)
