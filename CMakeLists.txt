@@ -41,8 +41,7 @@ configure_file (
 #find_package(PkgConfig REQUIRED)
 #find_package(CapnProto CONFIG REQUIRED)
 
-find_package(CLI11 CONFIG REQUIRED)
-
+include(cli11)
 include(fmt)
 include(restclient-cpp)
 include(tomlplusplus)
