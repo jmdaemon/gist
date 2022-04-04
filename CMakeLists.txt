@@ -29,9 +29,6 @@ set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake/modules/"
 # Project Dependencies  : fmt, httplib, tomlplusplus
 # Optional Dependencies : doctest (unit testing), Cap'n'Proto, PkgConfig, standalone asio (installed via package manager)
 include(FetchContent)
-FetchContent_Declare(libfmt
-    GIT_REPOSITORY "https://github.com/fmtlib/fmt")
-FetchContent_MakeAvailable(libfmt)
 
 # Configure gist project versions
 configure_file (
@@ -46,6 +43,7 @@ configure_file (
 
 find_package(CLI11 CONFIG REQUIRED)
 
+include(fmt)
 include(restclient-cpp)
 include(tomlplusplus)
 include(json)
