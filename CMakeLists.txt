@@ -26,21 +26,15 @@ set( GIST_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
 set( GIST_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} )
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake/modules/" "${PROJECT_SOURCE_DIR}/cmake" )
 
-# Project Dependencies  : fmt, httplib, tomlplusplus
-# Optional Dependencies : doctest (unit testing), Cap'n'Proto, PkgConfig, standalone asio (installed via package manager)
 include(FetchContent)
 
-# Configure gist project versions
+# Configure project versions
 configure_file (
   "${PROJECT_SOURCE_DIR}/include/Version.h.in"
   "${PROJECT_BINARY_DIR}/include/Version.h"
 )
 
-#include_directories("${PROJECT_BINARY_DIR}/include")
-
-#find_package(PkgConfig REQUIRED)
-#find_package(CapnProto CONFIG REQUIRED)
-
+# Include dependencies
 include(cli11)
 include(fmt)
 include(restclient-cpp)
@@ -58,12 +52,7 @@ if(BUILD_TESTING)
   add_subdirectory(tests)
 endif()
 
-set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Joseph Diza") # required
-set(CPACK_PACKAGE_DIRECTORY "packages/${CMAKE_PROJECT_NAME}-${CMAKE_PROJECT_VERSION}")
-#set(CPACK_DEBIAN_PACKAGE_DEPENDS "restclient-cpp")
-set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
-set(CPACK_GENERATOR "DEB;TGZ;ZIP") # Create .deb, .tgz, .zip files
-include(CPack)
+include(Debian)
 
 set(CMAKE_INSTALL_PREFIX /usr/local)
 install(TARGETS ${OGGEX} DESTINATION bin)
