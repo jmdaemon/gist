@@ -47,10 +47,7 @@ configure_file (
 find_package(CLI11 CONFIG REQUIRED)
 
 include(restclient-cpp)
-FetchContent_Declare(tomlplusplus
-    GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git
-    GIT_TAG        v2.4.0)
-FetchContent_MakeAvailable(tomlplusplus)
+include(tomlplusplus)
 
 FetchContent_Declare(json
   GIT_REPOSITORY https://github.com/ArthurSonzogni/nlohmann_json_cmake_fetchcontent.git
