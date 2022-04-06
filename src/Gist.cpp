@@ -138,13 +138,17 @@ int cleanup() {
   return 0;
 }
 
-std::string replaceAll(std::string str, const std::string& from = "-", const std::string& to = ":") {
+std::string substitute(std::string str, const std::string& from, const std::string& to) {
     size_t start_pos = 0;
     while((start_pos = str.find(from, start_pos)) != std::string::npos) {
         str.replace(start_pos, from.length(), to);
         start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
     }
     return str;
+}
+
+std::string substituteHyphenColon(std::string str) {
+  return substitute(str, "-", ":");
 }
 
 std::string strip(std::string s) {
@@ -162,7 +166,7 @@ void search(json& o, Options options) {
 
 int searchDate(json o, Options options, std::string date, std::string gistDate) {
   std::for_each(o.begin(), o.end(), std::bind([] (json o, Options options, std::string date, std::string gistDate) {
-    std::string gist_date  = replaceAll(gistDate);
+    std::string gist_date  = substituteHyphenColon(gistDate);
     if (gist_date > date) { search(o, options); } // Retrieve gists later than date
     } , std::placeholders::_1, options, date, gistDate));
   return cleanup();
@@ -238,11 +242,11 @@ int main(int argc, char** argv) {
     }
 
     if (!options.created_at.empty()) {
-      return searchDate(o, options, replaceAll(options.created_at + "T00:00:00Z"), "created_at");
+      return searchDate(o, options, substituteHyphenColon(options.created_at + "T00:00:00Z"), "created_at");
     }
 
     if(!options.updated_at.empty()) {
-      return searchDate(o, options, replaceAll(options.updated_at + "T00:00:00Z"), "updated_at");
+      return searchDate(o, options, substituteHyphenColon(options.updated_at + "T00:00:00Z"), "updated_at");
     }
     return cleanup();
   }
