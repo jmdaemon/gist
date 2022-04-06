@@ -16,7 +16,7 @@ void printData(Data data) {
 std::string getRaw(nlohmann::json o, std::string filter) {
   for (int i=0; i < o.size(); i++) { 
     for (auto& gist : o[i]["files"]) { 
-      std::cout << gist["filename"] << std::endl;
+      spdlog::info("{}\n", gist["filename"]);
       if (gist["filename"] == filter) {
         return gist["raw_url"];
       }

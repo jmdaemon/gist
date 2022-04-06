@@ -43,7 +43,8 @@ configure_file (
 
 # Include dependencies
 include(cli11)
-include(fmt)
+#include(fmt)
+include(spdlog)
 include(restclient-cpp)
 include(tomlplusplus)
 include(json)

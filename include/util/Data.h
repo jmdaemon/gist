@@ -9,9 +9,19 @@
 #include <cctype>
 #include <locale>
 
-#include <fmt/core.h>
-#include <fmt/os.h>
-#include <fmt/ostream.h>
+//#include <fmt/core.h>
+//#include <fmt/os.h>
+//#include <fmt/ostream.h>
+#include "spdlog/spdlog.h"
+//#include <fmt/ostream.h>
+//#include <fmt/os.h>
+//#include "spdlog/fmt/fmt.h"
+//#include "spdlog/fmt/bundled/format.h"
+#include "spdlog/fmt/bundled/core.h"
+#include "spdlog/fmt/bundled/ostream.h"
+#include "spdlog/fmt/bundled/os.h"
+
+//#define SPDLOG_FMT_EXTERNAL
 #include <nlohmann/json.hpp>
 
 struct Data {
