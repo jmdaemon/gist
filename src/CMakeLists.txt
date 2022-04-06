@@ -1,5 +1,5 @@
 set(INCLUDES_DIR "${PROJECT_SOURCE_DIR}/include")
-set(HEADER_LIST ${INCLUDES_DIR} ${INCLUDES_DIR}/util "${PROJECT_BINARY_DIR}/include")
+set(HEADER_LIST ${INCLUDES_DIR} ${INCLUDES_DIR}/utility "${PROJECT_BINARY_DIR}/include")
 set(TARGET gist)
 
 add_executable(${TARGET})
