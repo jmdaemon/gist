@@ -106,14 +106,19 @@ inline int searchFile(json o, Options options) {
   return cleanup();
 }
 
-int main(int argc, char** argv) { 
+struct App {
+  CLI::App* app;
+  Options* options;
+};
+
+//auto buildCli(std::string GIST_CONFIG) {
+App buildCli(std::string GIST_CONFIG) {
   CLI::App app{"Manage your GitHub gists"};
   app.allow_extras();
   app.formatter(std::make_shared<ArgFormat>());
   app.get_formatter()->column_width(40);
 
   auto showVersion = [](int) { fmt::print("gist v{}.{}.{}\n", GIST_VERSION_MAJOR, GIST_VERSION_MINOR, GIST_VERSION_PATCH); };
-  std::string GIST_CONFIG = std::string(std::getenv("HOME")) + "/.config/gist/config.toml"; 
 
   Options options;
   app.add_option("--config", GIST_CONFIG, "Specify gist config for user")->envname("GIST_CONFIG_HOME");
@@ -139,12 +144,26 @@ int main(int argc, char** argv) {
   deleteCmd     ->excludes("-v", "--version", "-l", "-u", "-n");
   updateCmd     ->excludes("-v", "--version", "-l", "-D", "-n");
   createNewGist ->excludes("-v", "--version", "-l", "-D", "-u");
+  //return std::make_tuple(app, options);
+  auto result = App { &app, &options };
+  return result;
+}
 
-  CLI11_PARSE(app, argc, argv); 
+int main(int argc, char** argv) { 
+  std::string GIST_CONFIG = std::string(std::getenv("HOME")) + "/.config/gist/config.toml"; 
+  auto cli = buildCli(GIST_CONFIG);
+  auto [ app, options ] = cli;
+  //CLI::App app;
+  //Options options;
+  //(app, options) = buildCli(GIST_CONFIG);
+  //App app = buildCli();
+  //std::tie(app, options) = buildCli(GIST_CONFIG);
+
+  CLI11_PARSE(*app, argc, argv); 
   auto config = parseConfig(GIST_CONFIG);
   RestClient::init();
 
-  if (options.listAllGists) {
+  if (options->listAllGists) {
     fmt::print("{}\n", (getGists(config).dump(4)));
     return cleanup();
   }
@@ -152,50 +171,50 @@ int main(int argc, char** argv) {
   if (*search) {
     auto o = getGists(config);
 
-    if (!options.searchID.empty()) {
-      return searchID(o, options);
+    if (!options->searchID.empty()) {
+      return searchID(o, *options);
     }
 
-    if (!options.hasName.empty()) {
-      return searchFile(o, options);
+    if (!options->hasName.empty()) {
+      return searchFile(o, *options);
     }
 
-    if (!options.created_at.empty()) {
-      return searchDate(o, options, substituteHyphenColon(options.created_at + "T00:00:00Z"), "created_at");
+    if (!options->created_at.empty()) {
+      return searchDate(o, *options, substituteHyphenColon(options->created_at + "T00:00:00Z"), "created_at");
     }
 
-    if(!options.updated_at.empty()) {
-      return searchDate(o, options, substituteHyphenColon(options.updated_at + "T00:00:00Z"), "updated_at");
+    if(!options->updated_at.empty()) {
+      return searchDate(o, *options, substituteHyphenColon(options->updated_at + "T00:00:00Z"), "updated_at");
     }
     return cleanup();
   }
 
-  if (!options.id.empty()) {
-    std::string id = parseID(options.id);
-    std::string fname = (!app.remaining()[0].empty()) ? app.remaining()[0]: "gistFile1.txt";
+  if (!options->id.empty()) {
+    std::string id = parseID(options->id);
+    std::string fname = (!app->remaining()[0].empty()) ? app->remaining()[0]: "gistFile1.txt";
     //Data data = {id, fname, options.hasDesc, readFile(fname), options.isPriv};
-    Data data = {id, fname, options.hasDesc, read_file(fname.c_str()), options.isPriv};
+    Data data = {id, fname, options->hasDesc, read_file(fname.c_str()), options->isPriv};
     //printData(data);
     updateGist(data, config);
     return cleanup();
   }
 
-  if (!options.deleteID.empty()) {
-    send("DELETE", config, Data{options.id});
+  if (!options->deleteID.empty()) {
+    send("DELETE", config, Data{options->id});
     return cleanup();
   }
 
   // Create new gist from STDIN
-  if (options.createNewGist) {
-    Data data = Data{options.id, readInput("Gist file name"), readInput("Gist description"), readInput("Gist contents")};
+  if (options->createNewGist) {
+    Data data = Data{options->id, readInput("Gist file name"), readInput("Gist description"), readInput("Gist contents")};
     printResponse(send("POST", config, data));
     return cleanup();
   }
 
   // Create new gist from files
-  for (auto& gist : app.remaining()) {
+  for (auto& gist : app->remaining()) {
     //Data data = {options.id, gist, options.hasDesc, readFile(gist), options.isPriv};
-    Data data = {options.id, gist, options.hasDesc, read_file(gist.c_str()), options.isPriv};
+    Data data = {options->id, gist, options->hasDesc, read_file(gist.c_str()), options->isPriv};
     printResponse(send("POST", config, data));
   }
   return cleanup();
