@@ -2,10 +2,11 @@
 #ifndef DATA_H
 #define DATA_H
 
-#include <iosfwd>
-#include <string>
-#include <algorithm>
-#include <functional> 
+//#include <iosfwd>
+//#include <string>
+//#include <algorithm>
+//#include <functional> 
+#include "Str.h"
 #include <cctype>
 #include <locale>
 
@@ -34,8 +35,8 @@ void serialize(nlohmann::json data, std::string filename);
 std::string getRaw(nlohmann::json o, std::string filter);
 std::string readInput(std::string prompt = "");
 
-inline std::string &ltrim(std::string &s);
-inline std::string &rtrim(std::string &s);
-inline std::string &trim(std::string &s);
+//inline std::string &ltrim(std::string &s);
+//inline std::string &rtrim(std::string &s);
+//inline std::string &trim(std::string &s);
 
 #endif
