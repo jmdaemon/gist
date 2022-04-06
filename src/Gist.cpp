@@ -241,7 +241,8 @@ int main(int argc, char** argv) {
   if (!options.id.empty()) {
     std::string id = parseID(options.id);
     std::string fname = (!app.remaining()[0].empty()) ? app.remaining()[0]: "gistFile1.txt";
-    Data data = {id, fname, options.hasDesc, readFile(fname), options.isPriv};
+    //Data data = {id, fname, options.hasDesc, readFile(fname), options.isPriv};
+    Data data = {id, fname, options.hasDesc, read_file(fname.c_str()), options.isPriv};
     //printData(data);
     updateGist(data, config);
     return cleanup();
@@ -261,7 +262,8 @@ int main(int argc, char** argv) {
 
   // Create new gist from files
   for (auto& gist : app.remaining()) {
-    Data data = {options.id, gist, options.hasDesc, readFile(gist), options.isPriv};
+    //Data data = {options.id, gist, options.hasDesc, readFile(gist), options.isPriv};
+    Data data = {options.id, gist, options.hasDesc, read_file(gist.c_str()), options.isPriv};
     printResponse(send("POST", config, data));
   }
   return cleanup();

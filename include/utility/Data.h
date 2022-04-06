@@ -25,6 +25,11 @@
 //#define SPDLOG_FMT_EXTERNAL
 #include <nlohmann/json.hpp>
 
+extern "C" {
+#include "file.h"
+  char* read_file(const char* path);
+}
+
 struct Data {
   std::string id, fname, desc, contents;
   bool pub = false; 

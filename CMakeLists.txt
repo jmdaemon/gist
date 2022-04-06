@@ -49,6 +49,7 @@ include(tomlplusplus)
 include(json)
 include(argparse)
 include(doctest)
+include(utility)
 
 # Add subdirectories
 add_subdirectory(src)
