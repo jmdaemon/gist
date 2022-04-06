@@ -1,5 +1,6 @@
 #include "Data.h"
 #include "Version.h"
+#include "Str.h"
 
 #include <algorithm>
 #include <cstdlib> /* getenv */
@@ -138,22 +139,8 @@ int cleanup() {
   return 0;
 }
 
-std::string substitute(std::string str, const std::string& from, const std::string& to) {
-    size_t start_pos = 0;
-    while((start_pos = str.find(from, start_pos)) != std::string::npos) {
-        str.replace(start_pos, from.length(), to);
-        start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
-    }
-    return str;
-}
-
 std::string substituteHyphenColon(std::string str) {
   return substitute(str, "-", ":");
-}
-
-std::string strip(std::string s) {
-  s.erase(remove( s.begin(), s.end(), '\"' ),s.end());
-  return s;
 }
 
 void search(json& o, Options options) {
@@ -161,7 +148,7 @@ void search(json& o, Options options) {
       fmt::print("{}\n", o.dump(4));
       return;
     }
-    std::for_each(o["files"].begin(), o["files"].end(), [] (json& gist) { fmt::print("{}\n", strip(gist["raw_url"])); });
+    std::for_each(o["files"].begin(), o["files"].end(), [] (json& gist) { fmt::print("{}\n", unquote(gist["raw_url"])); });
 }
 
 int searchDate(json o, Options options, std::string date, std::string gistDate) {
