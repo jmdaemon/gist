@@ -1,4 +1,5 @@
-set(HEADER_LIST "${GIST_SOURCE_DIR}/include/util" "${GIST_SOURCE_DIR}/include" "${PROJECT_BINARY_DIR}/include")
+set(INCLUDES_DIR "${PROJECT_SOURCE_DIR}/include")
+set(HEADER_LIST ${INCLUDES_DIR} ${INCLUDES_DIR}/util "${PROJECT_BINARY_DIR}/include")
 set(TARGET gist)
 
 add_executable(${TARGET})
@@ -11,10 +12,6 @@ target_sources(${TARGET}
 target_include_directories(${TARGET} PUBLIC ${HEADER_LIST})
 target_link_libraries(${TARGET} PRIVATE
     fmt tomlplusplus nlohmann_json restclient-cpp CLI11::CLI11 argparse spdlog)
-    #tomlplusplus json restclient-cpp CLI11::CLI11 argparse spdlog)
-    #fmt tomlplusplus json restclient-cpp CLI11::CLI11 argparse spdlog)
-    #fmt tomlplusplus nlohmann_json restclient-cpp CLI11::CLI11 argparse spdlog)
-    #fmt capnp tomlplusplus nlohmann_json restclient-cpp CLI11::CLI11 argparse spdlog::spdlog)
 target_compile_features(${TARGET} PUBLIC cxx_std_20)
 
 source_group(
