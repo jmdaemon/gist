@@ -4,7 +4,7 @@ set(TARGET gist)
 
 add_executable(${TARGET})
 target_sources(${TARGET}
-    PRIVATE Gist.cpp Data.cpp Str.cpp
+    PRIVATE Gist.cpp Data.cpp Str.cpp Api.cpp
     PUBLIC  ${HEADER_LIST}
 )
 
