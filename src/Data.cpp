@@ -1,7 +1,6 @@
 #include "Data.h"
 
 #include <iostream>
-//#include <ranges>
 
 void printData(Data data) { 
   fmt::print("==== Gist Data ====\n"); 

@@ -73,21 +73,6 @@ void updateGist(Data& data, Config& config) {
   printResponse(send("PATCH", config, data));
 }
 
-static std::string readFile(const std::filesystem::path& path) {
-    if (!std::filesystem::is_regular_file(path))
-        return { };
-
-    std::ifstream file(path, std::ios::in | std::ios::binary);
-    if (!file.is_open())
-        return { };
-
-    const std::size_t& size = std::filesystem::file_size(path);
-    std::string content(size, '\0');
-    file.read(content.data(), size);
-    file.close();
-    return content;
-}
-
 class ArgFormat : public CLI::Formatter {
   public:
     // Remove text between option name and description
@@ -158,7 +143,6 @@ int searchDate(json o, Options options, std::string date, std::string gistDate) 
     } , std::placeholders::_1, options, date, gistDate));
   return cleanup();
 }
-
 
 inline int searchID(json o, Options options) {
   std::for_each(o.begin(), o.end(), std::bind([] (json o, Options options) {
