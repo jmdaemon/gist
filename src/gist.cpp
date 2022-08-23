@@ -1,5 +1,9 @@
 #include "gist.h"
 
+constexpr unsigned int hash(const char *s, int off = 0) {
+    return !s[off] ? 5381 : (hash(s, off+1)*33) ^ s[off];
+}
+
 /** Parse gist config file for authentication token */
 auto parse_config(std::string path) {
   auto cfg   = toml::parse_file(path);
@@ -20,6 +24,30 @@ auto parse_config(std::string path) {
   return std::make_tuple(*token, *uname);
 }
 
+/** General purpose function to send http requests */
+RestClient::Response send_req(RestClient::Connection* con, std::string req_type, std::string query, std::string params = "") {
+  RestClient::Response response;
+  switch(hash(req_type.c_str())) {
+    case hash("GET")    : response = con->get(query);
+    case hash("POST")   : response = con->post(query, params);
+    case hash("DELETE") : response = con->del(query);
+    case hash("PATCH")  : response = con->patch(query, params);
+  }
+  return response;
+}
+
+
+/** Get json object from http response */
+nlohmann::json get_json(RestClient::Connection* con, std::string query) {
+  auto result = nlohmann::json::parse(send_req(con, "GET", query).body);
+  return result;
+  //std::string query = GITHUB_API_URL + "/users/"
+  //config.url = config.url + "/users/" + config.username;
+  //return json::parse(send("GET", config, {}, query).body);
+}
+
+
+// Search
 /** Returns searched results as raw urls
   TODO: Return nlohmann json object instead with the full objects instead. */
 std::vector<std::string> search(nlohmann::json& res) {
