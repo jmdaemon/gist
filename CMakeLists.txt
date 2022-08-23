@@ -61,7 +61,7 @@ set(INCLUDES_DIR "${PROJECT_SOURCE_DIR}/include")
 set(HEADERS_VERSION "${PROJECT_BINARY_DIR}/include")
 
 # Add subdirectories
-add_subdirectory(src)
+subdirs(src app)
 
 if (BUILD_TESTING AND NOT USE_AS_SUBPROJECT)
     include(doctest)
