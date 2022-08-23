@@ -24,16 +24,16 @@ std::string substituteHyphenColon(std::string str) {
   return substitute(str, "-", ":");
 }
 
-//void search(nlohmann::json& o, Options options) {
-    //if (!options.raw) {
-      //fmt::print("{}\n", o.dump(4));
-      //return;
-    //}
-    //std::for_each(o["files"].begin(), o["files"].end(), [] (json& gist) {
-        //std::string s = gist["raw_url"];
-        //fmt::print("{}\n", unquote(s));
-        //});
-//}
+std::vector<std::string> search(nlohmann::json& res) {
+  auto files = res["files"];
+  std::vector<std::string> results;
+  std::for_each(files.begin(), files.end(),
+      [] (nlohmann::json& gist, std::vector<std::string> results) {
+        std::string s = gist["raw_url"];
+        results.push_back(unquote(s));
+      });
+  return results;
+}
 
 //int searchDate(nlohmann::json o, arguments args, std::string date, std::string gistDate) {
   //std::for_each(o.begin(), o.end(), std::bind([] (nlohmann::json o, Options options, std::string date, std::string gistDate) {

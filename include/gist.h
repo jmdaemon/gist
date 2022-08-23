@@ -32,5 +32,6 @@ static const std::string logger_name = "gist";
 static const std::string GITHUB_API_URL = "https://api.github.com";
 
 auto parse_config(std::string path);
+std::vector<std::string> search(nlohmann::json& res);
 
 #endif // GIST_H
