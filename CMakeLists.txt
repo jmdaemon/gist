@@ -37,13 +37,20 @@ configure_file (
 # CMake modules
 include(FetchContent)
 
+# Subprojects
+set(USE_AS_SUBPROJECT TRUE)
+set(USE_AS_SUBMODULE TRUE)
+include(jolly)
+include(utility)
+unset(USE_AS_SUBMODULE)
+unset(USE_AS_SUBPROJECT)
+
 include(cli11)
 include(spdlog)
 include(restclient-cpp)
 include(tomlplusplus)
 include(json)
 include(argparse)
-include(utility)
 
 # Specify project dependencies
 # DEB_DEPENDS: Debian packages that provide the libraries the project depends upon
@@ -51,6 +58,7 @@ set(DEB_DEPENDS libc)
 
 # Include header files
 set(INCLUDES_DIR "${PROJECT_SOURCE_DIR}/include")
+set(HEADERS_VERSION "${PROJECT_BINARY_DIR}/include")
 
 # Add subdirectories
 add_subdirectory(src)
