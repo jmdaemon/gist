@@ -2,7 +2,7 @@
 #ifndef DATA_H
 #define DATA_H
 
-#include "Str.h"
+#include <jolly.h>
 #include <cctype>
 #include <locale>
 

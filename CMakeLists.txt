@@ -39,7 +39,7 @@ include(FetchContent)
 
 # Subprojects
 set(USE_AS_SUBPROJECT TRUE)
-set(USE_AS_SUBMODULE TRUE)
+set(USE_AS_SUBMODULE FALSE)
 include(jolly)
 include(utility)
 unset(USE_AS_SUBMODULE)

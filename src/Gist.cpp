@@ -1,6 +1,5 @@
 #include "Data.h"
 #include "Version.h"
-#include "Str.h"
 #include "Api.h"
 
 #include <algorithm>
@@ -81,7 +80,10 @@ void search(json& o, Options options) {
       fmt::print("{}\n", o.dump(4));
       return;
     }
-    std::for_each(o["files"].begin(), o["files"].end(), [] (json& gist) { fmt::print("{}\n", unquote(gist["raw_url"])); });
+    std::for_each(o["files"].begin(), o["files"].end(), [] (json& gist) {
+        std::string s = gist["raw_url"];
+        fmt::print("{}\n", unquote(s));
+        });
 }
 
 int searchDate(json o, Options options, std::string date, std::string gistDate) {
