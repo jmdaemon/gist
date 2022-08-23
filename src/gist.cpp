@@ -1,16 +1,5 @@
 #include "gist.h"
 
-// Parse gist IDs & gist urls
-auto parseID(std::string str, char delim = '/') {
-  std::istringstream ss(str);
-  std::string token;
-  std::vector<std::string> tokens; 
-  while(std::getline(ss, token, delim))
-    tokens.push_back(token); 
-  auto result = std::string(tokens.back());
-  return result;
-}
-
 /** Parse gist config file for authentication token */
 auto parse_config(std::string path) {
   auto cfg   = toml::parse_file(path);
