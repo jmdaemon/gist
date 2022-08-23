@@ -24,6 +24,8 @@ std::string substituteHyphenColon(std::string str) {
   return substitute(str, "-", ":");
 }
 
+/** Returns searched results as raw urls
+  TODO: Return nlohmann json object instead with the full objects instead. */
 std::vector<std::string> search(nlohmann::json& res) {
   auto files = res["files"];
   std::vector<std::string> results;
@@ -34,6 +36,38 @@ std::vector<std::string> search(nlohmann::json& res) {
       });
   return results;
 }
+
+/** Parse arbitrary datetime strings
+   e.g: 2021-07-14T02:10:41Z */
+std::tm parse_datetime(std::string datetime, std::string format) {
+  std::tm tm = {};
+  std::stringstream ss(datetime);
+  ss >> std::get_time(&tm, format.c_str());
+  return tm;
+}
+
+/** Returns searched results if the gist */
+//nlohmann::json search_date(nlohmann::json& res, std::string date, bool search_modified) {
+  //nlohmann::json results;
+  //std::string date_type = (search_modified) ? "updated_at" : "created_at";
+
+  //std::for_each(res.begin(), res.end(), [] (nlohmann::json& gist) {
+      //std::string gist_date  = substituteHyphenColon(gistDate);
+      //// 2021-07-14T02:10:41Z
+      //if()
+
+      //});
+
+  //return results;
+
+  //std::for_each(res.begin(), res.end(), [] (nlohmann::json& gist) {
+
+
+      //std::string gist_date  = substituteHyphenColon(gistDate);
+  //if (gist_date > date) { search(o, options); } // Retrieve gists later than date
+  //} , std::placeholders::_1, options, date, gistDate);
+
+//}
 
 //int searchDate(nlohmann::json o, arguments args, std::string date, std::string gistDate) {
   //std::for_each(o.begin(), o.end(), std::bind([] (nlohmann::json o, Options options, std::string date, std::string gistDate) {

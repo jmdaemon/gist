@@ -10,12 +10,14 @@
 
 // Standard Library
 #include <algorithm>
+#include <chrono>
 #include <exception>
+#include <iomanip>
 #include <istream>
-#include <tuple>
-#include <vector>
 #include <optional>
 #include <string>
+#include <tuple>
+#include <vector>
 
 // Third Party Libraries
 #include <jolly.h>
@@ -33,5 +35,6 @@ static const std::string GITHUB_API_URL = "https://api.github.com";
 
 auto parse_config(std::string path);
 std::vector<std::string> search(nlohmann::json& res);
+std::tm parse_datetime(std::string datetime, std::string format);
 
 #endif // GIST_H
