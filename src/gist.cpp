@@ -11,25 +11,24 @@ auto parseID(std::string str, char delim = '/') {
   return result;
 }
 
-// Parse auth token
-auto parseConfig(std::string GIST_CONFIG) {
-  auto config   = toml::parse_file(GIST_CONFIG);
-  auto token    = config["user"]["token"].value<std::string>();
-  auto username = config["user"]["name"].value<std::string>();
+/** Parse gist config file for authentication token */
+auto parse_config(std::string path) {
+  auto cfg   = toml::parse_file(path);
+  auto token = cfg["user"]["token"].value<std::string>();
+  auto uname = cfg["user"]["name"].value<std::string>();
 
-  // Enable on verbose mode
-  //fmt::print("\n==== Config ====\n");
-  //fmt::print("Token    : [{}]\n", *token);
-  //fmt::print("Username : [{}]\n\n", *username);
-
-  if (token->empty()) {
-    fmt::print("Token must not be empty");
-    throw std::exception();
-  } else if (username->empty()) {
-    fmt::print("Username must not be empty");
-    throw std::exception();
+  if (!token.has_value()) {
+    SPDLOG_ERROR("Token must not be empty");
+    exit(1);
+  } else if (!uname.has_value()) {
+    SPDLOG_ERROR("Username must not be empty");
+    exit(2);
   }
-  return std::make_tuple(*username, *token);
+
+  SPDLOG_INFO("Token    : {}", *token);
+  SPDLOG_INFO("Username : {}", *uname);
+
+  return std::make_tuple(*token, *uname);
 }
 
 std::string substituteHyphenColon(std::string str) {
