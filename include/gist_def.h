@@ -14,6 +14,7 @@ typedef struct Gist {
   char* desc;
   char* conts;
   char* filename;
+  char* rename;
   char* creation;
   char* modified;
 } Gist;

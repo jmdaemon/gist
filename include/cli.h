@@ -40,6 +40,7 @@ static const struct argp_option options[] = {
 
   // Search flags
   {"content"  , 'o', "Specify gist content string", 0},
+  {"rename"   , 'n', "Specify new gist filename", 0},
   {"id"       , 'i', "Specify gist id", 0},
   {"filename" , 'f', "Specify gist file name", 0},
   {"creation" , 'c', "Specify gist creation date", 0},

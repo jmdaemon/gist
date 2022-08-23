@@ -52,6 +52,10 @@ error_t parse_opt (int key, char *arg, struct argp_state *state) {
       arguments->gist.filename = arg;
       break;
 
+    case 'n':
+      arguments->gist.rename = arg;
+      break;
+
     case 'c':
       arguments->gist.creation = arg;
       break;
