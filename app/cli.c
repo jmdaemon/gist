@@ -40,6 +40,10 @@ error_t parse_opt (int key, char *arg, struct argp_state *state) {
       arguments->gist.desc = arg;
       break;
 
+    case 'o':
+      arguments->gist.conts = arg;
+      break;
+
     case 'i':
       arguments->gist.id = arg;
       break;

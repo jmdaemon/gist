@@ -12,6 +12,7 @@ extern "C" {
 typedef struct Gist {
   char* id;
   char* desc;
+  char* conts;
   char* filename;
   char* creation;
   char* modified;

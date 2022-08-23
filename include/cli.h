@@ -39,6 +39,7 @@ static const struct argp_option options[] = {
   {"desc"     , 'd', "Adds a description to your gist", 0},
 
   // Search flags
+  {"content"  , 'o', "Specify gist content string", 0},
   {"id"       , 'i', "Specify gist id", 0},
   {"filename" , 'f', "Specify gist file name", 0},
   {"creation" , 'c', "Specify gist creation date", 0},
