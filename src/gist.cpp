@@ -49,7 +49,6 @@ std::vector<nlohmann::json> search_date(nlohmann::json& res, std::string date, b
   auto tm = parse_datetime(date, GIST_DATE_FORMAT);
 
   // Loop through the http response
-  //for (auto it = res.begin(); it != res.end(); it++) {
   for (auto gist : res) {
     // Get the input datetimes
     auto gist_date = gist[date_type];
@@ -72,44 +71,20 @@ std::vector<nlohmann::json> search_date(nlohmann::json& res, std::string date, b
   return results;
 }
 
-/** Return the gist if the id matches */
+/** Return gist by matching id */
 nlohmann::json search_id(nlohmann::json& res, std::string id) {
   nlohmann::json result = nullptr;
   for (auto gist : res)
       if (gist["id"] == id)
         result = gist;
-  //std::for_each(res.begin(), res.end(),
-      //[] (nlohmann::json gist, nlohmann::json result, std::string id) {
-      //if (gist["id"] == id) { result = gist; }
-  //});
   return result;
 }
 
-//inline int searchID(nlohmann::json o, Options options) {
-  //std::for_each(o.begin(), o.end(), std::bind([] (json o, Options options) {
-    //if (o["id"] == options.searchID) { search(o, options); } return;
-    //} , std::placeholders::_1, options));
-  //return cleanup();
-//}
-
-//int searchDate(nlohmann::json o, arguments args, std::string date, std::string gistDate) {
-  //std::for_each(o.begin(), o.end(), std::bind([] (nlohmann::json o, Options options, std::string date, std::string gistDate) {
-    //std::string gist_date  = substituteHyphenColon(gistDate);
-    //if (gist_date > date) { search(o, options); } // Retrieve gists later than date
-    //} , std::placeholders::_1, options, date, gistDate));
-  //return cleanup();
-//}
-
-//inline int searchID(nlohmann::json o, Options options) {
-  //std::for_each(o.begin(), o.end(), std::bind([] (json o, Options options) {
-    //if (o["id"] == options.searchID) { search(o, options); } return;
-    //} , std::placeholders::_1, options));
-  //return cleanup();
-//}
-
-//inline int searchFile(nlohmann::json o, Options options) {
-  //std::for_each(o.begin(), o.end(), std::bind([] (json o, Options options) {
-        //for (auto& file : o["files"]) { if (file["filename"] == options.hasName) search(o, options); }
-        //}, std::placeholders::_1, options));
-  //return cleanup();
-//}
+/** Return gists by matching filename */
+std::vector<nlohmann::json> search_filename(nlohmann::json res, std::string file) {
+  std::vector<nlohmann::json> results;
+  for (auto gist : res["files"]) 
+    if (gist["filename"] == file)
+      results.push_back(gist);
+  return results;
+}
