@@ -59,7 +59,7 @@ if (BUILD_TESTING AND NOT USE_AS_SUBPROJECT)
     include(doctest)
     include(MakeTests)
     include(CTest)
-    add_subdirectory(tests)
+    add_subdirectory(test)
 endif()
 
 include(Install)
