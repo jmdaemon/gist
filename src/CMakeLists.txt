@@ -11,7 +11,7 @@ target_sources(${TARGET}
 #target_include_directories(${TARGET} PUBLIC ${HEADER_LIST} ${UTILITY_HEADERS})
 target_include_directories(${TARGET} PUBLIC ${HEADER_LIST})
 target_link_libraries(${TARGET} PRIVATE
-    fmt tomlplusplus nlohmann_json restclient-cpp CLI11::CLI11 argparse spdlog utility)
+    fmt tomlplusplus nlohmann_json restclient-cpp CLI11::CLI11 argparse spdlog pcre utility)
 target_compile_features(${TARGET} PUBLIC cxx_std_20)
 
 source_group(
