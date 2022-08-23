@@ -118,7 +118,7 @@ App buildCli(std::string GIST_CONFIG) {
   app.formatter(std::make_shared<ArgFormat>());
   app.get_formatter()->column_width(40);
 
-  auto showVersion = [](int) { fmt::print("gist v{}.{}.{}\n", GIST_VERSION_MAJOR, GIST_VERSION_MINOR, GIST_VERSION_PATCH); };
+  auto showVersion = [](int) { fmt::print("gist v{}.{}.{}\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH); };
 
   Options options;
   app.add_option("--config", GIST_CONFIG, "Specify gist config for user")->envname("GIST_CONFIG_HOME");
