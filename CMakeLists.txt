@@ -3,8 +3,7 @@ cmake_minimum_required(VERSION 3.19) # CMake 3.9
 project (gist
     VERSION 0.2.0
     DESCRIPTION "Gist CLI tool to interact with the Gist REST api"
-    LANGUAGES CXX
-    )
+    LANGUAGES C CXX)
 
 # Variable Toggles
 if (NOT USE_AS_SUBPROJECT)
@@ -45,9 +44,10 @@ include(utility)
 unset(USE_AS_SUBMODULE)
 unset(USE_AS_SUBPROJECT)
 
+include(restclient-cpp)
+
 include(cli11)
 include(spdlog)
-include(restclient-cpp)
 include(tomlplusplus)
 include(json)
 include(argparse)
