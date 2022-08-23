@@ -42,7 +42,7 @@ RestClient::HeaderFields create_headers(std::string token) {
 }
 
 /** Initiate a connection to a url */
-RestClient::Connection* connect(std::string url, RestClient::HeaderFields* headers = nullptr) {
+RestClient::Connection* connect(std::string url, RestClient::HeaderFields* headers) {
   RestClient::Connection* con = new RestClient::Connection(url);
   con->FollowRedirects(true);
   if (headers != nullptr) 
@@ -51,7 +51,7 @@ RestClient::Connection* connect(std::string url, RestClient::HeaderFields* heade
 }
 
 /** General purpose function to send http requests */
-RestClient::Response send_req(RestClient::Connection* con, std::string req_type, std::string query, std::string params = "") {
+RestClient::Response send_req(RestClient::Connection* con, std::string req_type, std::string query, std::string params) {
   RestClient::Response response;
   switch(hash(req_type.c_str())) {
     case hash("GET")    : response = con->get(query);

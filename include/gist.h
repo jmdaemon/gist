@@ -40,9 +40,19 @@ enum RELTIME {
   EXACT
 };
 
+// Gist functions
 auto parse_config(std::string path);
 std::vector<std::string> search(nlohmann::json& res);
 std::tm parse_datetime(std::string datetime, std::string format);
+
+// HTTP requests
+RestClient::HeaderFields create_headers(std::string token);
+RestClient::Connection* connect(std::string url, RestClient::HeaderFields* headers = nullptr);
+RestClient::Response send_req(RestClient::Connection* con, std::string req_type, std::string query, std::string params = "");
+
+// Json
+nlohmann::json create_json(arguments args, std::string conts);
+nlohmann::json get_json(RestClient::Connection* con, std::string query);
 
 // Gist search functions
 std::vector<std::string> search(nlohmann::json& res);
