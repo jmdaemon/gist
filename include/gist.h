@@ -36,6 +36,9 @@
 
 // Constants
 static const std::string logger_name = "gist";
+/* [2022-08-20 23:16:43.347] [debug] [app.cpp:3] Message! */
+static const std::string logger_format = "[%Y-%m-%d %H.%M.%S.%e] [%^%l%$] [%s:%#] %v";
+
 static const std::string GITHUB_API_URL = "https://api.github.com";
 static const std::string GIST_DATE_FORMAT = "%FT%T%z"; // ISO 8601 Format, 2021-07-14T02:10:41Z
 static const std::string GIST_CONFIG_PATH = std::string(getenv("HOME")) + "/.config/gist/config.toml";

@@ -17,6 +17,19 @@ std::shared_ptr<spdlog::logger> setup_logger(std::vector<spdlog::sink_ptr> sinks
   return logger;
 }
 
+/* Enable/disable logging */
+void setup_logging(bool verbose) {
+  if (verbose == 1)
+    spdlog::set_level(spdlog::level::level_enum::trace);
+  else {
+    // Default to no logging
+    spdlog::set_level(spdlog::level::level_enum::off);
+    #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_NONE
+  }
+  spdlog::cfg::load_env_levels();
+  spdlog::set_pattern(logger_format);
+}
+
 int main(int argc, char** argv) {
   // Parse arguments
   struct arguments arguments = set_default_args();
@@ -28,19 +41,7 @@ int main(int argc, char** argv) {
   std::vector<spdlog::sink_ptr> sinks;
   sinks.push_back(std::make_shared<spdlog::sinks::stdout_sink_st>());
   auto logger = setup_logger(sinks);
-
-  // Enable/disable logging
-  if (arguments.verbose == 1)
-    spdlog::set_level(spdlog::level::level_enum::trace);
-  else {
-    // Default to no logging
-    spdlog::set_level(spdlog::level::level_enum::off);
-    #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_NONE
-  }
-  spdlog::cfg::load_env_levels();
-
-  /* [2022-08-20 23:16:43.347] [debug] [app.cpp:3] Message! */
-  spdlog::set_pattern("[%Y-%m-%d %H.%M.%S.%e] [%^%l%$] [%s:%#] %v");
+  setup_logging(arguments.verbose);
 
   // Set gist config path
   std::string cfg = GIST_CONFIG_PATH;
