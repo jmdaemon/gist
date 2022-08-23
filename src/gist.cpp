@@ -72,6 +72,19 @@ std::vector<nlohmann::json> search_date(nlohmann::json& res, std::string date, b
   return results;
 }
 
+/** Return the gist if the id matches */
+nlohmann::json search_id(nlohmann::json& res, std::string id) {
+  nlohmann::json result = nullptr;
+  for (auto gist : res)
+      if (gist["id"] == id)
+        result = gist;
+  //std::for_each(res.begin(), res.end(),
+      //[] (nlohmann::json gist, nlohmann::json result, std::string id) {
+      //if (gist["id"] == id) { result = gist; }
+  //});
+  return result;
+}
+
 //inline int searchID(nlohmann::json o, Options options) {
   //std::for_each(o.begin(), o.end(), std::bind([] (json o, Options options) {
     //if (o["id"] == options.searchID) { search(o, options); } return;
