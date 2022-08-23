@@ -44,4 +44,6 @@ auto parse_config(std::string path);
 std::vector<std::string> search(nlohmann::json& res);
 std::tm parse_datetime(std::string datetime, std::string format);
 
+std::vector<nlohmann::json> search_date(nlohmann::json& res, std::string date, bool search_modified, RELTIME reltime);
+
 #endif // GIST_H

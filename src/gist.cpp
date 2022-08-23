@@ -48,27 +48,36 @@ std::vector<nlohmann::json> search_date(nlohmann::json& res, std::string date, b
   std::string date_type = (search_modified) ? "updated_at" : "created_at";
   auto tm = parse_datetime(date, GIST_DATE_FORMAT);
 
-  for (auto it = res.begin(); it != res.end(); it++) {
-      // Get the input datetimes
-      auto gist_date = res[date_type];
-      auto gist_tm = parse_datetime(gist_date, GIST_DATE_FORMAT);
-      
-      // Find the difference between the two dates 
-      auto d1 = std::mktime(&tm);
-      auto d2 = std::mktime(&gist_tm);
-      auto diff = difftime(d1, d2);
+  // Loop through the http response
+  //for (auto it = res.begin(); it != res.end(); it++) {
+  for (auto gist : res) {
+    // Get the input datetimes
+    auto gist_date = gist[date_type];
+    auto gist_tm = parse_datetime(gist_date, GIST_DATE_FORMAT);
+    
+    // Find the difference between the two dates 
+    auto d1 = std::mktime(&tm);
+    auto d2 = std::mktime(&gist_tm);
+    auto diff = difftime(d1, d2);
 
-      // Filter results according to reltime
-      if ((diff > 0) && (reltime == AFTER)) {
-        results.push_back(res);
-      } else if ((diff == 0) && (reltime == EXACT)) {
-        results.push_back(res);
-      } else if ((diff < 0) && reltime == BEFORE) {
-        results.push_back(res);
-      }
+    // Filter results according to reltime
+    if ((diff > 0) && (reltime == AFTER)) {
+      results.push_back(gist);
+    } else if ((diff == 0) && (reltime == EXACT)) {
+      results.push_back(gist);
+    } else if ((diff < 0) && reltime == BEFORE) {
+      results.push_back(gist);
+    }
   };
   return results;
 }
+
+//inline int searchID(nlohmann::json o, Options options) {
+  //std::for_each(o.begin(), o.end(), std::bind([] (json o, Options options) {
+    //if (o["id"] == options.searchID) { search(o, options); } return;
+    //} , std::placeholders::_1, options));
+  //return cleanup();
+//}
 
 //int searchDate(nlohmann::json o, arguments args, std::string date, std::string gistDate) {
   //std::for_each(o.begin(), o.end(), std::bind([] (nlohmann::json o, Options options, std::string date, std::string gistDate) {
