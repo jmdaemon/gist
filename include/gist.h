@@ -76,5 +76,6 @@ void show_res(RestClient::Response res);
 void log_res(RestClient::Response res);
 
 void list_gists(RestClient::HeaderFields headers);
+void new_gist(arguments args, RestClient::HeaderFields headers);
 
 #endif // GIST_H

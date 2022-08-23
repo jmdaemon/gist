@@ -174,3 +174,25 @@ void list_gists(RestClient::HeaderFields headers) {
   log_res(res);
   show_res(res);
 }
+
+/** Creates a new gist from STDIN prompts */
+void new_gist(arguments args, RestClient::HeaderFields headers) {
+  // Read user input from STDIN
+  //auto fname = prompt("Gist Name:");
+  //auto conts = prompt("Contents:\n");
+  //auto desc  = prompt("Description:");
+  args.gist.filename = (char*) prompt("Filename: ").c_str();
+  auto conts = prompt("Contents:\n");
+  args.gist.desc = (char*) prompt("Description: ").c_str();
+  args.priv  = (prompt("Make Private? [y/n]: ") == "y") ? true : false;
+
+  // Send http request
+  RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
+  //std::string params = "";
+  auto params = create_json(args, conts);
+
+  std::string query = "/gists";
+  auto res = send_req(con, "POST", query, params.dump());
+  log_res(res);
+  show_res(res);
+}

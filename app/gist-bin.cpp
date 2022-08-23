@@ -58,7 +58,10 @@ int main(int argc, char** argv) {
     case hash("list"):
       list_gists(headers);
       break;
-    case hash("new"): break;
+    case hash("new"):
+      new_gist(arguments, headers);
+      break;
+    case hash("create"): break;
     case hash("delete"): break;
     case hash("update"): break;
     case hash("search"): break;
