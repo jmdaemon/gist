@@ -72,11 +72,14 @@ nlohmann::json search_id(nlohmann::json& res, std::string id);
 std::vector<nlohmann::json> search_filename(nlohmann::json res, std::string file);
 
 // Gist commands
-void show_res(RestClient::Response res);
 void log_res(RestClient::Response res);
+void log_gist(RestClient::Response res);
+void http_send(RestClient::HeaderFields headers, std::string req_type, std::string query, std::string params = "");
+void show_res(RestClient::Response res);
 
 void list_gists(RestClient::HeaderFields headers);
 void new_gist(arguments args, RestClient::HeaderFields headers);
 void create_gist(arguments args, RestClient::HeaderFields headers);
+void delete_gist(arguments args, RestClient::HeaderFields headers);
 
 #endif // GIST_H

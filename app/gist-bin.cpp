@@ -55,16 +55,10 @@ int main(int argc, char** argv) {
   auto headers = create_headers(token);
 
   switch(hash(command)) {
-    case hash("list"):
-      list_gists(headers);
-      break;
-    case hash("new"):
-      new_gist(arguments, headers);
-      break;
-    case hash("create"):
-      create_gist(arguments, headers);
-      break;
-    case hash("delete"): break;
+    case hash("list"):    list_gists(headers); break;
+    case hash("new"):     new_gist(arguments, headers); break;
+    case hash("create"):  create_gist(arguments, headers); break;
+    case hash("delete"):  delete_gist(arguments, headers); break;
     case hash("update"): break;
     case hash("search"): break;
   }

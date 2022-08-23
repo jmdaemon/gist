@@ -168,10 +168,20 @@ void log_gist(std::string fname, std::string conts, std::string desc, bool priv)
   SPDLOG_DEBUG("Is Private: {}", priv);
 }
 
+/** Finalizes a request with the given query, params strings */
+void http_send(RestClient::HeaderFields headers, std::string req_type, std::string query, std::string params) {
+  RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
+  auto res = send_req(con, req_type, query, params);
+  log_res(res);
+  show_res(res);
+}
+
 /* Show json response */
 void show_res(RestClient::Response res) {
-  auto json_res = nlohmann::json::parse(res.body);
-  fmt::print("{}", json_res.dump(INDENT_LEVEL));
+  if (!res.body.empty()) {
+    auto json_res = nlohmann::json::parse(res.body);
+    fmt::print("{}", json_res.dump(INDENT_LEVEL));
+  }
 }
 
 /** List all gists found for the user */
@@ -179,9 +189,7 @@ void list_gists(RestClient::HeaderFields headers) {
   RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
   std::string params = "";
   std::string query = "/gists";
-  auto res = send_req(con, "GET", query);
-  log_res(res);
-  show_res(res);
+  http_send(headers, "GET", query, params);
 }
 
 /** Creates a new gist from STDIN prompts */
@@ -197,18 +205,13 @@ void new_gist(arguments args, RestClient::HeaderFields headers) {
   // TODO: Create automated test to check if the fields
   // match up with the inputs for the output json
 
-  // Send http request
-  RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
+  auto query = "/gists";
   auto params = create_json(fname, conts, desc, priv);
   SPDLOG_DEBUG("JSON:\n{}", params.dump(INDENT_LEVEL));
-
-  auto query = "/gists";
-  auto res = send_req(con, "POST", query, params.dump());
-  log_res(res);
-  show_res(res);
+  http_send(headers, "POST", query, params.dump());
 }
 
-/** Creates a new gist from STDIN args */
+/** Creates a new gist from cli options */
 void create_gist(arguments args, RestClient::HeaderFields headers) {
   auto fname  = std::string(args.gist.filename);
   auto desc   = std::string(args.gist.desc);
@@ -217,12 +220,25 @@ void create_gist(arguments args, RestClient::HeaderFields headers) {
   log_gist(fname, conts, desc, priv);
 
   // Send http request
-  RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
+  auto query = "/gists";
   auto params = create_json(fname, conts, desc, priv);
   SPDLOG_DEBUG("JSON:\n{}", params.dump(INDENT_LEVEL));
+  http_send(headers, "POST", query, params.dump());
+}
 
-  auto query = "/gists";
-  auto res = send_req(con, "POST", query, params.dump());
-  log_res(res);
-  show_res(res);
+/** Deletes a gist from matching id
+TODO: Add option to mass delete gists by matching filename, or by dates */
+void delete_gist(arguments args, RestClient::HeaderFields headers) {
+  auto id = std::string(args.gist.id);
+  SPDLOG_DEBUG("Gist ID: {}", id);
+
+  //RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
+  auto query = fmt::format("/gists/{}", id);
+  http_send(headers, "DELETE", query);
+  //auto res = send_req(con, "DELETE", query);
+
+  //RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
+  //auto res = send_req(con, "DELETE", query);
+  //log_res(res);
+  //show_res(res);
 }
