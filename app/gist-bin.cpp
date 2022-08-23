@@ -1,5 +1,4 @@
 #include "gist.h"
-#include <iostream>
 
 constexpr unsigned int hash(const char *s, int off = 0) {
     return !s[off] ? 5381 : (hash(s, off+1)*33) ^ s[off];
@@ -68,42 +67,33 @@ int main(int argc, char** argv) {
       //RestClient::Connection* con = connect(base, &headers);
       //RestClient::Connection* con = connect(GITHUB_API_URL + "/gists", &headers);
 
-      //RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
-      //RestClient::Connection* con = new RestClient::Connection(GITHUB_API_URL + "/gists");
-      RestClient::Connection* con = new RestClient::Connection(GITHUB_API_URL);
-      con->FollowRedirects(true);
-      con->SetHeaders(headers); 
-
-      //RestClient::Connection* con = new RestClient::Connection(GITHUB_API_URL);
-        //con->FollowRedirects(true);
-      //con->SetHeaders(headers);
-      //std::string query = fmt::format("{}/gists/users/{}", GITHUB_API_URL, uname);
-      //std::string query = fmt::format("/users/{}/gists", uname);
-      //std::string query = "/gists";
-      //std::string query = fmt::format("/gists/users/{}", uname);
-      //std::string query = "/gists";
-      //std::string query = "/gists?per_page=100&page=1";
-      //std::string query = "/gists";
-      //std::string query = "/gists";
+      RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
+      std::string params = "";
       std::string query = "/gists";
+
       //std::string query = "";
       //auto res = get_json(con, query);
       //fmt::print("{}", res.dump(INDENT_LEVEL));
       //auto res = send_req(con, "GET", "");
 
-      //auto res = send_req(con, "GET", query);
-      auto res = con->get(query);
+      auto res = send_req(con, "GET", query);
+      //auto res = con->get(query);
       //auto res = con->get(query);
 
       SPDLOG_DEBUG("Response Code: {}", res.code);
-      //SPDLOG_DEBUG("Response Headers:\n{}", res.headers);
       SPDLOG_DEBUG("Response Headers: ");
       for (auto it : res.headers)
         SPDLOG_DEBUG("{}: {}", it.first, it.second);
-      std::cout << res.body << std::endl;
       SPDLOG_DEBUG("Response Body:\n{}", res.body);
 
+      //SPDLOG_DEBUG("Response Code: {}", res->code);
+      //SPDLOG_DEBUG("Response Headers: ");
+      //for (auto it : res->headers)
+        //SPDLOG_DEBUG("{}: {}", it.first, it.second);
+      //SPDLOG_DEBUG("Response Body:\n{}", res->body);
+
       auto json_res = nlohmann::json::parse(res.body);
+      //auto json_res = nlohmann::json::parse(res->body);
       fmt::print("{}", json_res.dump(INDENT_LEVEL));
       break;
     }

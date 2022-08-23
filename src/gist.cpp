@@ -59,15 +59,16 @@ RestClient::Connection* connect(std::string url, RestClient::HeaderFields* heade
 }
 
 /** General purpose function to send http requests */
+//RestClient::Response* send_req(RestClient::Connection* con, std::string req_type, std::string query, std::string params) {
 RestClient::Response send_req(RestClient::Connection* con, std::string req_type, std::string query, std::string params) {
-  RestClient::Response response;
   switch(hash(req_type.c_str())) {
-    case hash("GET")    : response = con->get(query);
-    case hash("POST")   : response = con->post(query, params);
-    case hash("DELETE") : response = con->del(query);
-    case hash("PATCH")  : response = con->patch(query, params);
+    case hash("GET")    : return con->get(query);
+    case hash("POST")   : return con->post(query, params);
+    case hash("DELETE") : return con->del(query);
+    case hash("PATCH")  : return con->patch(query, params);
+    default             : return RestClient::Response();
   }
-  return response;
+  //return response;
 }
 
 /** Get json object from http response */
