@@ -24,6 +24,15 @@ auto parse_config(std::string path) {
   return std::make_tuple(*token, *uname);
 }
 
+/** Initiate a connection to a url */
+RestClient::Connection* connect(std::string url, RestClient::HeaderFields* headers = nullptr) {
+  RestClient::Connection* con = new RestClient::Connection(url);
+  con->FollowRedirects(true);
+  if (headers != nullptr) 
+    con->SetHeaders(*headers);
+  return con;
+}
+
 /** General purpose function to send http requests */
 RestClient::Response send_req(RestClient::Connection* con, std::string req_type, std::string query, std::string params = "") {
   RestClient::Response response;
@@ -41,11 +50,7 @@ RestClient::Response send_req(RestClient::Connection* con, std::string req_type,
 nlohmann::json get_json(RestClient::Connection* con, std::string query) {
   auto result = nlohmann::json::parse(send_req(con, "GET", query).body);
   return result;
-  //std::string query = GITHUB_API_URL + "/users/"
-  //config.url = config.url + "/users/" + config.username;
-  //return json::parse(send("GET", config, {}, query).body);
 }
-
 
 // Search
 /** Returns searched results as raw urls
