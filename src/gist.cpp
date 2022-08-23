@@ -48,11 +48,9 @@ std::vector<nlohmann::json> search_date(nlohmann::json& res, std::string date, b
   std::string date_type = (search_modified) ? "updated_at" : "created_at";
   auto tm = parse_datetime(date, GIST_DATE_FORMAT);
 
-  std::for_each(res.begin(), res.end(), []
-      (nlohmann::json& gist, std::string date_type, std::tm tm, RELTIME reltime,
-       std::vector<nlohmann::json> results) {
+  for (auto it = res.begin(); it != res.end(); it++) {
       // Get the input datetimes
-      auto gist_date = gist[date_type];
+      auto gist_date = res[date_type];
       auto gist_tm = parse_datetime(gist_date, GIST_DATE_FORMAT);
       
       // Find the difference between the two dates 
@@ -62,13 +60,13 @@ std::vector<nlohmann::json> search_date(nlohmann::json& res, std::string date, b
 
       // Filter results according to reltime
       if ((diff > 0) && (reltime == AFTER)) {
-        results.push_back(gist);
+        results.push_back(res);
       } else if ((diff == 0) && (reltime == EXACT)) {
-        results.push_back(gist);
+        results.push_back(res);
       } else if ((diff < 0) && reltime == BEFORE) {
-        results.push_back(gist);
+        results.push_back(res);
       }
-  });
+  };
   return results;
 }
 
