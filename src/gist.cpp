@@ -211,9 +211,9 @@ void new_gist(arguments args, RestClient::HeaderFields headers) {
 /** Creates a new gist from cli options */
 void create_gist(arguments args, RestClient::HeaderFields headers) {
   auto fname  = std::string(args.gist.filename);
+  auto conts  = std::string(args.gist.conts);
   auto desc   = std::string(args.gist.desc);
   auto priv   = args.priv;
-  auto conts  = std::string(args.gist.conts);
   log_gist(fname, conts, desc, priv);
 
   // Send http request
@@ -237,22 +237,28 @@ TODO: Add option to mass update gists by matching filename, or by dates */
 void update_gist(arguments args, RestClient::HeaderFields headers) {
   auto id     = std::string(args.gist.id);
   auto fname  = std::string(args.gist.filename);
+  auto conts  = std::string(args.gist.conts);
+  auto desc   = std::string(args.gist.desc);
   auto nname  = std::string(args.gist.rename);
-  //auto fname  = "";
-  //auto desc   = std::string(args.gist.desc);
-  auto desc   = "";
   auto priv   = args.priv;
-  //auto conts  = std::string(args.gist.conts);
-  auto conts  = "";
 
   SPDLOG_DEBUG("Gist ID: {}", id);
   log_gist(fname, conts, desc, priv);
 
   auto query = fmt::format("{}/{}", GIST_ENDPOINT, id);
-  auto params = create_json(fname, conts, desc, priv);
-  params["files"][fname]["filename"] = nname; // Support file renaming
+  nlohmann::json params;
+  params["public"] = !priv;
+
+  // Intelligently update only fields that are specified (non-null)
+  if (!desc.empty())
+    params["description"] = desc;
+
+  if (!conts.empty())
+    params["files"][fname]["content"] = conts;
+
+  if (!nname.empty()) 
+    params["files"][fname]["filename"] = nname; // Rename gist file
+
   SPDLOG_DEBUG("JSON:\n{}", params.dump(INDENT_LEVEL));
   http_send(headers, "PATCH", query, params.dump());
-  //auto params = create_json(fname, conts, desc, priv);
-  //http_send(headers, "PATCH", query, params);
 }
