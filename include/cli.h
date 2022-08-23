@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 /* Imports */
-#include "gist.h"
+#include "gist_def.h"
 
 /* Standard Library */
 #include <argp.h>

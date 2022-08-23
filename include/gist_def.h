@@ -1,6 +1,6 @@
 #pragma once
-#ifndef GIST_H
-#define GIST_H
+#ifndef GIST_DEF_H
+#define GIST_DEF_H
 
 /* Support header include for C++ */
 #ifdef __cplusplus
@@ -20,4 +20,4 @@ typedef struct Gist {
 #ifdef __cplusplus
 }
 #endif
-#endif // GIST_H
+#endif // GIST_DEF_H
