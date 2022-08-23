@@ -1,6 +1,8 @@
-#include "gist_def.h"
-#include "cli.h"
-#include <jolly.h>
+#include "gist.h"
+
+constexpr unsigned int hash(const char *s, int off = 0) {
+    return !s[off] ? 5381 : (hash(s, off+1)*33) ^ s[off];
+}
 
 int main(int argc, char** argv) {
 
@@ -10,17 +12,15 @@ int main(int argc, char** argv) {
 
   // Handle environment variable for gist config
   
-  char* command = arguments.args[0];
+  const char* command = arguments.args[0];
 
-  /*
-  switch(shash(command)) {
-    case shash("new"): break;
-    case shash("list"): break;
-    case shash("delete"): break;
-    case shash("update"): break;
-    case shash("search"): break;
+  switch(hash(command)) {
+    case hash("list"): break;
+    case hash("new"): break;
+    case hash("delete"): break;
+    case hash("update"): break;
+    case hash("search"): break;
   }
-  */
 
   return 0;
 }
