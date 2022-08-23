@@ -1,9 +1,0 @@
-{
-  "description": "Example json file for use in GitHub REST API",
-  "public": true,
-  "files": {
-    "TestFile.txt": {
-      "content": "This is a test file."
-    }
-  }
-}
