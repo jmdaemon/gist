@@ -8,5 +8,8 @@
 
 // Third Party Libraries
 #include <jolly.h>
+#include <restclient-cpp/connection.h>
+#include <restclient-cpp/restclient.h>
+
 
 #endif // GIST_H

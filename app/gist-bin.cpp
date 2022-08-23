@@ -5,7 +5,6 @@ constexpr unsigned int hash(const char *s, int off = 0) {
 }
 
 int main(int argc, char** argv) {
-
   // Parse arguments
   struct arguments arguments = set_default_args();
   argp_parse (&argp, argc, argv, 0, 0, &arguments);
@@ -13,6 +12,8 @@ int main(int argc, char** argv) {
   // Handle environment variable for gist config
   
   const char* command = arguments.args[0];
+
+  RestClient::init();
 
   switch(hash(command)) {
     case hash("list"): break;
@@ -22,5 +23,6 @@ int main(int argc, char** argv) {
     case hash("search"): break;
   }
 
+  RestClient::disable();
   return 0;
 }
