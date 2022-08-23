@@ -25,6 +25,14 @@ std::tuple<std::string, std::string> parse_config(std::string path) {
 }
 
 /** Form json requests for GitHub gists */
+nlohmann::json create_json(std::string fname, std::string conts, std::string desc, bool priv) {
+  nlohmann::json req;
+  req["description"] = desc;
+  req["public"] = !priv;
+  req["files"][fname]["content"] = conts;
+  return req;
+}
+
 nlohmann::json create_json(arguments args, std::string conts) {
   nlohmann::json req;
   req["description"] = std::string(args.gist.desc, strlen(args.gist.desc));
@@ -151,6 +159,15 @@ void log_res(RestClient::Response res) {
   SPDLOG_DEBUG("Response Body:\n{}", res.body);
 }
 
+/* Log gist fields */
+void log_gist(std::string fname, std::string conts, std::string desc, bool priv) {
+  SPDLOG_DEBUG("New Gist: ");
+  SPDLOG_DEBUG("Filename: {}", fname);
+  SPDLOG_DEBUG("Contents:\n{}", conts);
+  SPDLOG_DEBUG("Description: {}", desc);
+  SPDLOG_DEBUG("Is Private: {}", priv);
+}
+
 /* Show json response */
 void show_res(RestClient::Response res) {
   auto json_res = nlohmann::json::parse(res.body);
@@ -170,53 +187,23 @@ void list_gists(RestClient::HeaderFields headers) {
 /** Creates a new gist from STDIN prompts */
 void new_gist(arguments args, RestClient::HeaderFields headers) {
   // Read user input from STDIN
-  //auto fname = prompt("Gist Name:");
-  //auto conts = prompt("Contents:\n");
-  //auto desc  = prompt("Description:");
-
-  //args.gist.filename = (char*) prompt("Filename: ").c_str();
-  //auto conts = prompt("Contents:\n");
-  //args.gist.desc = (char*) prompt("Description: ").c_str();
-  //args.priv  = (prompt("Make Private? [y/n]: ") == "y") ? true : false;
-
   auto fname = prompt("Filename: ");
   auto conts = prompt("Contents:\n");
   auto desc  = prompt("Description: ");
   auto priv  = (prompt("Make Private? [y/n]: ") == "y") ? true : false;
 
-  nlohmann::json req;
-  req["description"] = desc;
-  req["public"] = !args.priv;
-  req["files"][fname]["content"] = conts;
+  log_gist(fname, conts, desc, priv);
 
-  // Log fields
-  //SPDLOG_DEBUG("New Gist: ");
-  //SPDLOG_DEBUG("Filename: {}", args.gist.filename);
-  //SPDLOG_DEBUG("Contents:\n{}", conts);
-  //SPDLOG_DEBUG("Description: {}", args.gist.desc);
-  //SPDLOG_DEBUG("Is Private: {}", args.priv);
-
-  SPDLOG_DEBUG("New Gist: ");
-  SPDLOG_DEBUG("Filename: {}", fname);
-  SPDLOG_DEBUG("Contents:\n{}", conts);
-  SPDLOG_DEBUG("Description: {}", desc);
-  SPDLOG_DEBUG("Is Private: {}", priv);
-
-  // TODO: Create automated test to determine if the fields match up with the inputs
+  // TODO: Create automated test to check if the fields
+  // match up with the inputs for the output json
 
   // Send http request
-  //RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
-  //std::string params = "";
-
-  //auto params = create_json(args, conts);
-  //SPDLOG_DEBUG("JSON:\n{}", params.dump(INDENT_LEVEL));
-
-  auto params = req;
+  RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
+  auto params = create_json(args, conts);
   SPDLOG_DEBUG("JSON:\n{}", params.dump(INDENT_LEVEL));
 
-
-  //std::string query = "/gists";
-  //auto res = send_req(con, "POST", query, params.dump());
-  //log_res(res);
-  //show_res(res);
+  auto query = "/gists";
+  auto res = send_req(con, "POST", query, params.dump());
+  log_res(res);
+  show_res(res);
 }
