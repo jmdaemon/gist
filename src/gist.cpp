@@ -199,11 +199,35 @@ void new_gist(arguments args, RestClient::HeaderFields headers) {
 
   // Send http request
   RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
-  auto params = create_json(args, conts);
+  auto params = create_json(fname, conts, desc, priv);
   SPDLOG_DEBUG("JSON:\n{}", params.dump(INDENT_LEVEL));
 
   auto query = "/gists";
   auto res = send_req(con, "POST", query, params.dump());
   log_res(res);
   show_res(res);
+}
+
+/** Creates a new gist from STDIN args */
+void create_gist(arguments args, RestClient::HeaderFields headers) {
+  auto fname  = std::string(args.gist.filename);
+  auto desc   = std::string(args.gist.desc);
+  auto priv   = args.priv;
+  //std::string conts  = ""; // TODO: Stub the implementation for the content string
+  auto conts = std::string("a"); // TODO: Stub the implementation for the content string
+  log_gist(fname, conts, desc, priv);
+
+  // TODO: Create automated test to check if the fields
+  // match up with the inputs for the output json
+
+  // Send http request
+  //RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
+  //auto params = create_json(args, conts);
+  auto params = create_json(fname, conts, desc, priv);
+  SPDLOG_DEBUG("JSON:\n{}", params.dump(INDENT_LEVEL));
+
+  //auto query = "/gists";
+  //auto res = send_req(con, "POST", query, params.dump());
+  //log_res(res);
+  //show_res(res);
 }
