@@ -1,20 +1,5 @@
 #include "gist.h"
 
-// Standard Library
-#include <algorithm>
-#include <exception>
-#include <istream>
-#include <tuple>
-#include <vector>
-#include <optional>
-
-// Third Party Libraries
-#include <spdlog/fmt/bundled/core.h>
-#include <spdlog/fmt/bundled/ostream.h>
-#include <spdlog/fmt/bundled/os.h>
-#include <nlohmann/json.hpp>
-#include <toml++/toml.h>
-
 // Parse gist IDs & gist urls
 auto parseID(std::string str, char delim = '/') {
   std::istringstream ss(str);
@@ -28,10 +13,9 @@ auto parseID(std::string str, char delim = '/') {
 
 // Parse auth token
 auto parseConfig(std::string GIST_CONFIG) {
-  const std::string url = "https://api.github.com";
-  auto config = toml::parse_file(GIST_CONFIG);
-  const std::optional<std::string> token    = config["user"]["token"].value<std::string>();
-  const std::optional<std::string> username = config["user"]["name"].value<std::string>();
+  auto config   = toml::parse_file(GIST_CONFIG);
+  auto token    = config["user"]["token"].value<std::string>();
+  auto username = config["user"]["name"].value<std::string>();
 
   // Enable on verbose mode
   //fmt::print("\n==== Config ====\n");
@@ -45,7 +29,7 @@ auto parseConfig(std::string GIST_CONFIG) {
     fmt::print("Username must not be empty");
     throw std::exception();
   }
-  return std::make_tuple(url, *username, *token);
+  return std::make_tuple(*username, *token);
 }
 
 std::string substituteHyphenColon(std::string str) {
