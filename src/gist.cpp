@@ -24,6 +24,23 @@ auto parse_config(std::string path) {
   return std::make_tuple(*token, *uname);
 }
 
+/** Form json requests for GitHub gists */
+nlohmann::json create_json(arguments args, std::string conts) {
+  nlohmann::json req;
+  req["description"] = args.gist.desc;
+  req["public"] = !args.priv;
+  req["files"][args.gist.filename]["content"] = conts;
+  return req;
+}
+
+/** Create request headers */
+RestClient::HeaderFields create_headers(std::string token) {
+  RestClient::HeaderFields headers;
+  headers["Accept"] = "application/vnd.github.v3+json";
+  headers["Authorization"] = "token " + token;
+  return headers;
+}
+
 /** Initiate a connection to a url */
 RestClient::Connection* connect(std::string url, RestClient::HeaderFields* headers = nullptr) {
   RestClient::Connection* con = new RestClient::Connection(url);
