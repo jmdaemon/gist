@@ -27,6 +27,13 @@ set( GIST_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} )
 # Include CMake modules
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake/modules/" "${PROJECT_SOURCE_DIR}/cmake")
 
+if (NO_COLOR)
+    # Don't use colored output
+else()
+    # Include colored output by default
+    include(Color)
+endif()
+
 # Single source project version
 configure_file (
   "${PROJECT_SOURCE_DIR}/include/Version.h.in"
