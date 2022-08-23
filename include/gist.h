@@ -10,6 +10,7 @@
 
 // Standard Library
 #include <algorithm>
+#include <cstdio>
 #include <chrono>
 #include <exception>
 #include <iomanip>
@@ -28,6 +29,8 @@
 #include <spdlog/cfg/env.h>
 #include <spdlog/fmt/fmt.h>
 #include <spdlog/fmt/bundled/core.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/sinks/stdout_sinks.h>
 #include <restclient-cpp/connection.h>
 #include <restclient-cpp/restclient.h>
 
