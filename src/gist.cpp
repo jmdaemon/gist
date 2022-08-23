@@ -27,9 +27,10 @@ std::tuple<std::string, std::string> parse_config(std::string path) {
 /** Form json requests for GitHub gists */
 nlohmann::json create_json(arguments args, std::string conts) {
   nlohmann::json req;
-  req["description"] = args.gist.desc;
+  req["description"] = std::string(args.gist.desc, strlen(args.gist.desc));
   req["public"] = !args.priv;
-  req["files"][args.gist.filename]["content"] = conts;
+  req["files"][std::string(args.gist.filename, strlen(args.gist.filename))]
+    ["content"] = conts;
   return req;
 }
 
@@ -37,13 +38,7 @@ nlohmann::json create_json(arguments args, std::string conts) {
 RestClient::HeaderFields create_headers(std::string token) {
   RestClient::HeaderFields headers;
   headers["Accept"] = GITHUB_ACCEPT;
-  //headers["Authorization"] = "token " + token;
-  //headers["Authorization"] = token;
-
   headers["Authorization"] = fmt::format("token {}", token);
-
-  //headers["per_page"] = 100;
-  //headers["page"] = 1;
   return headers;
 }
 
@@ -59,7 +54,6 @@ RestClient::Connection* connect(std::string url, RestClient::HeaderFields* heade
 }
 
 /** General purpose function to send http requests */
-//RestClient::Response* send_req(RestClient::Connection* con, std::string req_type, std::string query, std::string params) {
 RestClient::Response send_req(RestClient::Connection* con, std::string req_type, std::string query, std::string params) {
   switch(hash(req_type.c_str())) {
     case hash("GET")    : return con->get(query);
@@ -68,7 +62,6 @@ RestClient::Response send_req(RestClient::Connection* con, std::string req_type,
     case hash("PATCH")  : return con->patch(query, params);
     default             : return RestClient::Response();
   }
-  //return response;
 }
 
 /** Get json object from http response */
@@ -147,7 +140,6 @@ std::vector<nlohmann::json> search_filename(nlohmann::json res, std::string file
   return results;
 }
 
-
 // Commands
 
 /** Log HTTP response information */
@@ -181,18 +173,50 @@ void new_gist(arguments args, RestClient::HeaderFields headers) {
   //auto fname = prompt("Gist Name:");
   //auto conts = prompt("Contents:\n");
   //auto desc  = prompt("Description:");
-  args.gist.filename = (char*) prompt("Filename: ").c_str();
+
+  //args.gist.filename = (char*) prompt("Filename: ").c_str();
+  //auto conts = prompt("Contents:\n");
+  //args.gist.desc = (char*) prompt("Description: ").c_str();
+  //args.priv  = (prompt("Make Private? [y/n]: ") == "y") ? true : false;
+
+  auto fname = prompt("Filename: ");
   auto conts = prompt("Contents:\n");
-  args.gist.desc = (char*) prompt("Description: ").c_str();
-  args.priv  = (prompt("Make Private? [y/n]: ") == "y") ? true : false;
+  auto desc  = prompt("Description: ");
+  auto priv  = (prompt("Make Private? [y/n]: ") == "y") ? true : false;
+
+  nlohmann::json req;
+  req["description"] = desc;
+  req["public"] = !args.priv;
+  req["files"][fname]["content"] = conts;
+
+  // Log fields
+  //SPDLOG_DEBUG("New Gist: ");
+  //SPDLOG_DEBUG("Filename: {}", args.gist.filename);
+  //SPDLOG_DEBUG("Contents:\n{}", conts);
+  //SPDLOG_DEBUG("Description: {}", args.gist.desc);
+  //SPDLOG_DEBUG("Is Private: {}", args.priv);
+
+  SPDLOG_DEBUG("New Gist: ");
+  SPDLOG_DEBUG("Filename: {}", fname);
+  SPDLOG_DEBUG("Contents:\n{}", conts);
+  SPDLOG_DEBUG("Description: {}", desc);
+  SPDLOG_DEBUG("Is Private: {}", priv);
+
+  // TODO: Create automated test to determine if the fields match up with the inputs
 
   // Send http request
-  RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
+  //RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
   //std::string params = "";
-  auto params = create_json(args, conts);
 
-  std::string query = "/gists";
-  auto res = send_req(con, "POST", query, params.dump());
-  log_res(res);
-  show_res(res);
+  //auto params = create_json(args, conts);
+  //SPDLOG_DEBUG("JSON:\n{}", params.dump(INDENT_LEVEL));
+
+  auto params = req;
+  SPDLOG_DEBUG("JSON:\n{}", params.dump(INDENT_LEVEL));
+
+
+  //std::string query = "/gists";
+  //auto res = send_req(con, "POST", query, params.dump());
+  //log_res(res);
+  //show_res(res);
 }
