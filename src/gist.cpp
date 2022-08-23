@@ -37,7 +37,13 @@ nlohmann::json create_json(arguments args, std::string conts) {
 RestClient::HeaderFields create_headers(std::string token) {
   RestClient::HeaderFields headers;
   headers["Accept"] = GITHUB_ACCEPT;
+  //headers["Authorization"] = "token " + token;
+  //headers["Authorization"] = token;
+
   headers["Authorization"] = fmt::format("token {}", token);
+
+  //headers["per_page"] = 100;
+  //headers["page"] = 1;
   return headers;
 }
 
@@ -45,8 +51,10 @@ RestClient::HeaderFields create_headers(std::string token) {
 RestClient::Connection* connect(std::string url, RestClient::HeaderFields* headers) {
   RestClient::Connection* con = new RestClient::Connection(url);
   con->FollowRedirects(true);
-  if (headers != nullptr) 
+  if (headers != nullptr) {
+    SPDLOG_DEBUG("Setting headers");
     con->SetHeaders(*headers);
+  }
   return con;
 }
 
@@ -61,7 +69,6 @@ RestClient::Response send_req(RestClient::Connection* con, std::string req_type,
   }
   return response;
 }
-
 
 /** Get json object from http response */
 nlohmann::json get_json(RestClient::Connection* con, std::string query) {
