@@ -72,6 +72,9 @@ nlohmann::json search_id(nlohmann::json& res, std::string id);
 std::vector<nlohmann::json> search_filename(nlohmann::json res, std::string file);
 
 // Gist commands
-void list_gists();
+void show_res(RestClient::Response res);
+void log_res(RestClient::Response res);
+
+void list_gists(RestClient::HeaderFields headers);
 
 #endif // GIST_H

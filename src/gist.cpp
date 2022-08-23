@@ -150,16 +150,27 @@ std::vector<nlohmann::json> search_filename(nlohmann::json res, std::string file
 
 // Commands
 
-//void show_response(nlohmann::json res, bool raw) {
-  ////(raw) ? fmt::print("{}", res.body) : fmt::print();
-  //// Raw file dump 
-  ////if (raw) 
-//}
+/** Log HTTP response information */
+void log_res(RestClient::Response res) {
+  SPDLOG_DEBUG("Response Code: {}", res.code);
+  SPDLOG_DEBUG("Response Headers: ");
+  for (auto it : res.headers)
+    SPDLOG_DEBUG("{}: {}", it.first, it.second);
+  SPDLOG_DEBUG("Response Body:\n{}", res.body);
+}
+
+/* Show json response */
+void show_res(RestClient::Response res) {
+  auto json_res = nlohmann::json::parse(res.body);
+  fmt::print("{}", json_res.dump(INDENT_LEVEL));
+}
 
 /** List all gists found for the user */
-void list_gists() {
-  RestClient::Connection* con = connect(GITHUB_API_URL);
+void list_gists(RestClient::HeaderFields headers) {
+  RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
+  std::string params = "";
   std::string query = "/gists";
-  auto res = get_json(con, query);
-  fmt::print("{}", res);
+  auto res = send_req(con, "GET", query);
+  log_res(res);
+  show_res(res);
 }

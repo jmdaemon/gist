@@ -34,7 +34,6 @@ int main(int argc, char** argv) {
   // Parse arguments
   struct arguments arguments = set_default_args();
   argp_parse (&argp, argc, argv, 0, 0, &arguments);
-
   const char* command = arguments.args[0];
 
   // Setup library logging
@@ -43,60 +42,22 @@ int main(int argc, char** argv) {
   auto logger = setup_logger(sinks);
   setup_logging(arguments.verbose);
 
-  // Set gist config path
+  // Set gist config file path
   std::string cfg = GIST_CONFIG_PATH;
   if (arguments.config != nullptr)
     cfg = arguments.config;
   else if (getenv("GIST_CONFIG_HOME") != nullptr)
     cfg = getenv("GIST_CONFIG_HOME");
 
-  // Parse config
   auto [token, uname] = parse_config(cfg);
 
-  // Create headers
   RestClient::init();
   auto headers = create_headers(token);
 
   switch(hash(command)) {
-    case hash("list"): {
-      // List every gist available that the user has
-      //list_gists();
-      //RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
-      //std::string base = fmt::format("{}/users/{}", GITHUB_API_URL, uname);
-      //SPDLOG_DEBUG("Url: {}", base);
-      //RestClient::Connection* con = connect(base, &headers);
-      //RestClient::Connection* con = connect(GITHUB_API_URL + "/gists", &headers);
-
-      RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
-      std::string params = "";
-      std::string query = "/gists";
-
-      //std::string query = "";
-      //auto res = get_json(con, query);
-      //fmt::print("{}", res.dump(INDENT_LEVEL));
-      //auto res = send_req(con, "GET", "");
-
-      auto res = send_req(con, "GET", query);
-      //auto res = con->get(query);
-      //auto res = con->get(query);
-
-      SPDLOG_DEBUG("Response Code: {}", res.code);
-      SPDLOG_DEBUG("Response Headers: ");
-      for (auto it : res.headers)
-        SPDLOG_DEBUG("{}: {}", it.first, it.second);
-      SPDLOG_DEBUG("Response Body:\n{}", res.body);
-
-      //SPDLOG_DEBUG("Response Code: {}", res->code);
-      //SPDLOG_DEBUG("Response Headers: ");
-      //for (auto it : res->headers)
-        //SPDLOG_DEBUG("{}: {}", it.first, it.second);
-      //SPDLOG_DEBUG("Response Body:\n{}", res->body);
-
-      auto json_res = nlohmann::json::parse(res.body);
-      //auto json_res = nlohmann::json::parse(res->body);
-      fmt::print("{}", json_res.dump(INDENT_LEVEL));
+    case hash("list"):
+      list_gists(headers);
       break;
-    }
     case hash("new"): break;
     case hash("delete"): break;
     case hash("update"): break;
