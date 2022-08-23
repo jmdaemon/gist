@@ -34,6 +34,7 @@ configure_file (
   "${PROJECT_BINARY_DIR}/include/Version.h")
 
 # Include dependencies
+# CMake modules
 include(FetchContent)
 
 include(cli11)
@@ -43,6 +44,13 @@ include(tomlplusplus)
 include(json)
 include(argparse)
 include(utility)
+
+# Specify project dependencies
+# DEB_DEPENDS: Debian packages that provide the libraries the project depends upon
+set(DEB_DEPENDS libc)
+
+# Include header files
+set(INCLUDES_DIR "${PROJECT_SOURCE_DIR}/include")
 
 # Add subdirectories
 add_subdirectory(src)
@@ -54,10 +62,8 @@ if (BUILD_TESTING AND NOT USE_AS_SUBPROJECT)
     add_subdirectory(tests)
 endif()
 
-# Package for debian
-include(Debian)
+include(Install)
 
-set(CMAKE_INSTALL_PREFIX /usr/local)
-install(TARGETS ${OGGEX} DESTINATION bin)
-install(TARGETS ${OGGEX} CONFIGURATIONS Debug   RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin/Debug)
-install(TARGETS ${OGGEX} CONFIGURATIONS Release RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin/Release)
+# Packages
+include(InstallRequiredSystemLibraries)
+include(Debian)
