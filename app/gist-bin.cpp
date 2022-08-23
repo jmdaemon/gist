@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
       RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
       std::string query = fmt::format("/gists/users/{}", uname);
       auto res = get_json(con, query);
-      fmt::print("{}", res);
+      fmt::print("{}", res.dump(INDENT_LEVEL));
       break;
     }
     case hash("new"): break;
