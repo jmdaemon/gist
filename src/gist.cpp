@@ -36,8 +36,8 @@ nlohmann::json create_json(arguments args, std::string conts) {
 /** Create request headers */
 RestClient::HeaderFields create_headers(std::string token) {
   RestClient::HeaderFields headers;
-  headers["Accept"] = "application/vnd.github.v3+json";
-  headers["Authorization"] = "token " + token;
+  headers["Accept"] = GITHUB_ACCEPT;
+  headers["Authorization"] = fmt::format("token {}", token);
   return headers;
 }
 
