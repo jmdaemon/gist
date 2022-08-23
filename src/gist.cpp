@@ -20,10 +20,6 @@ auto parse_config(std::string path) {
   return std::make_tuple(*token, *uname);
 }
 
-std::string substituteHyphenColon(std::string str) {
-  return substitute(str, "-", ":");
-}
-
 /** Returns searched results as raw urls
   TODO: Return nlohmann json object instead with the full objects instead. */
 std::vector<std::string> search(nlohmann::json& res) {
@@ -46,28 +42,35 @@ std::tm parse_datetime(std::string datetime, std::string format) {
   return tm;
 }
 
-/** Returns searched results if the gist */
-//nlohmann::json search_date(nlohmann::json& res, std::string date, bool search_modified) {
-  //nlohmann::json results;
-  //std::string date_type = (search_modified) ? "updated_at" : "created_at";
+/** Returns searched results if the gist date is later than the specified date */
+std::vector<nlohmann::json> search_date(nlohmann::json& res, std::string date, bool search_modified, RELTIME reltime) {
+  std::vector<nlohmann::json> results;
+  std::string date_type = (search_modified) ? "updated_at" : "created_at";
+  auto tm = parse_datetime(date, GIST_DATE_FORMAT);
 
-  //std::for_each(res.begin(), res.end(), [] (nlohmann::json& gist) {
-      //std::string gist_date  = substituteHyphenColon(gistDate);
-      //// 2021-07-14T02:10:41Z
-      //if()
+  std::for_each(res.begin(), res.end(), []
+      (nlohmann::json& gist, std::string date_type, std::tm tm, RELTIME reltime,
+       std::vector<nlohmann::json> results) {
+      // Get the input datetimes
+      auto gist_date = gist[date_type];
+      auto gist_tm = parse_datetime(gist_date, GIST_DATE_FORMAT);
+      
+      // Find the difference between the two dates 
+      auto d1 = std::mktime(&tm);
+      auto d2 = std::mktime(&gist_tm);
+      auto diff = difftime(d1, d2);
 
-      //});
-
-  //return results;
-
-  //std::for_each(res.begin(), res.end(), [] (nlohmann::json& gist) {
-
-
-      //std::string gist_date  = substituteHyphenColon(gistDate);
-  //if (gist_date > date) { search(o, options); } // Retrieve gists later than date
-  //} , std::placeholders::_1, options, date, gistDate);
-
-//}
+      // Filter results according to reltime
+      if ((diff > 0) && (reltime == AFTER)) {
+        results.push_back(gist);
+      } else if ((diff == 0) && (reltime == EXACT)) {
+        results.push_back(gist);
+      } else if ((diff < 0) && reltime == BEFORE) {
+        results.push_back(gist);
+      }
+  });
+  return results;
+}
 
 //int searchDate(nlohmann::json o, arguments args, std::string date, std::string gistDate) {
   //std::for_each(o.begin(), o.end(), std::bind([] (nlohmann::json o, Options options, std::string date, std::string gistDate) {

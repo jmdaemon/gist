@@ -32,6 +32,13 @@
 // Constants
 static const std::string logger_name = "gist";
 static const std::string GITHUB_API_URL = "https://api.github.com";
+static const std::string GIST_DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"; // 2021-07-14T02:10:41Z
+
+enum RELTIME {
+  BEFORE,
+  AFTER,
+  EXACT
+};
 
 auto parse_config(std::string path);
 std::vector<std::string> search(nlohmann::json& res);
