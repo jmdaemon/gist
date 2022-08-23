@@ -4,3 +4,6 @@
 [submodule "cmake"]
 	path = cmake
 	url = https://github.com/jmdaemon/cmake-modules
+[submodule "subprojects/utility"]
+	path = subprojects/utility
+	url = https://github.com/jmdaemon/utility
