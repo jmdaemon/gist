@@ -9,7 +9,7 @@ make_ssl(NAME cli
 set(BIN_NAME ${TARGET}-bin)
 add_executable(${BIN_NAME} gist-bin.cpp)
 target_include_directories(${BIN_NAME} PUBLIC ${HEADERS})
-target_link_libraries(${BIN_NAME} PRIVATE restclient-cpp cli jolly)
+target_link_libraries(${BIN_NAME} PRIVATE pcre utility jolly spdlog tomlplusplus nlohmann_json restclient-cpp cli gist)
 
 # Rename binary executable without -bin suffix
 set_target_properties(${BIN_NAME} PROPERTIES OUTPUT_NAME ${TARGET})

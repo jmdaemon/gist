@@ -26,6 +26,8 @@
 #include <spdlog/logger.h>
 #include <spdlog/spdlog.h>
 #include <spdlog/cfg/env.h>
+#include <spdlog/fmt/fmt.h>
+#include <spdlog/fmt/bundled/core.h>
 #include <restclient-cpp/connection.h>
 #include <restclient-cpp/restclient.h>
 

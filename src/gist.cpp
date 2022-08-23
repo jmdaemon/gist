@@ -76,7 +76,7 @@ std::vector<std::string> search(nlohmann::json& res) {
   auto files = res["files"];
   std::vector<std::string> results;
   std::for_each(files.begin(), files.end(),
-      [] (nlohmann::json& gist, std::vector<std::string> results) {
+      [results] (nlohmann::json& gist) mutable {
         std::string s = gist["raw_url"];
         results.push_back(unquote(s));
       });
