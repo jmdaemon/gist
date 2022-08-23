@@ -5,7 +5,7 @@ constexpr unsigned int hash(const char *s, int off = 0) {
 }
 
 /** Parse gist config file for authentication token */
-auto parse_config(std::string path) {
+std::tuple<std::string, std::string> parse_config(std::string path) {
   auto cfg   = toml::parse_file(path);
   auto token = cfg["user"]["token"].value<std::string>();
   auto uname = cfg["user"]["name"].value<std::string>();
@@ -137,4 +137,21 @@ std::vector<nlohmann::json> search_filename(nlohmann::json res, std::string file
     if (gist["filename"] == file)
       results.push_back(gist);
   return results;
+}
+
+
+// Commands
+
+//void show_response(nlohmann::json res, bool raw) {
+  ////(raw) ? fmt::print("{}", res.body) : fmt::print();
+  //// Raw file dump 
+  ////if (raw) 
+//}
+
+/** List all gists found for the user */
+void list_gists() {
+  RestClient::Connection* con = connect(GITHUB_API_URL);
+  std::string query = "/gists";
+  auto res = get_json(con, query);
+  fmt::print("{}", res);
 }
