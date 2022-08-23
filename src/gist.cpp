@@ -165,7 +165,7 @@ void log_gist(std::string fname, std::string conts, std::string desc, bool priv)
   SPDLOG_DEBUG("Filename: {}", fname);
   SPDLOG_DEBUG("Contents:\n{}", conts);
   SPDLOG_DEBUG("Description: {}", desc);
-  SPDLOG_DEBUG("Is Private: {}", priv);
+  SPDLOG_DEBUG("Private: {}", priv);
 }
 
 /** Finalizes a request with the given query, params strings */
@@ -230,4 +230,29 @@ void delete_gist(arguments args, RestClient::HeaderFields headers) {
 
   auto query = fmt::format("{}/{}", GIST_ENDPOINT, id);
   http_send(headers, "DELETE", query);
+}
+
+/** Updates a gist from matching id
+TODO: Add option to mass update gists by matching filename, or by dates */
+void update_gist(arguments args, RestClient::HeaderFields headers) {
+  auto id     = std::string(args.gist.id);
+  auto fname  = std::string(args.gist.filename);
+  auto nname  = std::string(args.gist.rename);
+  //auto fname  = "";
+  //auto desc   = std::string(args.gist.desc);
+  auto desc   = "";
+  auto priv   = args.priv;
+  //auto conts  = std::string(args.gist.conts);
+  auto conts  = "";
+
+  SPDLOG_DEBUG("Gist ID: {}", id);
+  log_gist(fname, conts, desc, priv);
+
+  auto query = fmt::format("{}/{}", GIST_ENDPOINT, id);
+  auto params = create_json(fname, conts, desc, priv);
+  params["files"][fname]["filename"] = nname; // Support file renaming
+  SPDLOG_DEBUG("JSON:\n{}", params.dump(INDENT_LEVEL));
+  http_send(headers, "PATCH", query, params.dump());
+  //auto params = create_json(fname, conts, desc, priv);
+  //http_send(headers, "PATCH", query, params);
 }

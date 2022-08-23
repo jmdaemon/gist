@@ -82,5 +82,6 @@ void list_gists(RestClient::HeaderFields headers);
 void new_gist(arguments args, RestClient::HeaderFields headers);
 void create_gist(arguments args, RestClient::HeaderFields headers);
 void delete_gist(arguments args, RestClient::HeaderFields headers);
+void update_gist(arguments args, RestClient::HeaderFields headers);
 
 #endif // GIST_H
