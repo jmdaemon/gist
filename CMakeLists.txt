@@ -21,9 +21,6 @@ if (EXISTS "${LOC_PATH}")
                         "remove CMakeCache.txt and CMakeFiles.")
 endif()
 
-set( GIST_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
-set( GIST_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} )
-
 # Include CMake modules
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake/modules/" "${PROJECT_SOURCE_DIR}/cmake")
 
@@ -60,7 +57,7 @@ include(json)
 # PKG_DEPENDS: Library names to link the output files
 # DEB_DEPENDS: Debian packages that provide the libraries the project depends upon
 set(PKG_DEPENDS pcre utility jolly spdlog tomlplusplus nlohmann_json restclient-cpp)
-set(DEB_DEPENDS libc)
+set(DEB_DEPENDS libc pcre)
 
 # Include header files
 set(INCLUDES_DIR "${PROJECT_SOURCE_DIR}/include")
@@ -70,6 +67,7 @@ set(HEADERS_VERSION "${PROJECT_BINARY_DIR}/include")
 subdirs(resources src app)
 
 if (BUILD_TESTING AND NOT USE_AS_SUBPROJECT)
+    set(DISCOVER_TESTS FALSE)
     include(doctest)
     include(MakeTests)
     include(CTest)
