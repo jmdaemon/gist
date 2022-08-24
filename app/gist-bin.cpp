@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
     case hash("create"):  create_gist(arguments, headers); break;
     case hash("delete"):  delete_gist(arguments, headers); break;
     case hash("update"):  update_gist(arguments, headers); break;
-    case hash("search"): break;
+    case hash("search"):  search_gist(arguments, headers); break;
   }
 
   RestClient::disable();

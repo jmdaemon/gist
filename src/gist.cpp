@@ -84,11 +84,29 @@ nlohmann::json get_json(RestClient::Connection* con, std::string query) {
 std::vector<std::string> search(nlohmann::json& res) {
   auto files = res["files"];
   std::vector<std::string> results;
-  std::for_each(files.begin(), files.end(),
-      [results] (nlohmann::json& gist) mutable {
-        std::string s = gist["raw_url"];
-        results.push_back(unquote(s));
-      });
+
+  for (auto file: files) {
+      SPDLOG_DEBUG("{}", file.dump(INDENT_LEVEL));
+      std::string s = file["raw_url"];
+      SPDLOG_DEBUG("{}", s);
+      results.push_back(s);
+
+  }
+  //std::for_each(files.begin(), files.end(),
+      //[results] (nlohmann::json& gist) mutable {
+        ////results.push_back(s);
+      //});
+
+
+  //std::for_each(files.begin(), files.end(),
+      //[results] (nlohmann::json& gist) mutable {
+        //SPDLOG_DEBUG("{}", gist.dump(INDENT_LEVEL));
+        //std::string s = gist["raw_url"];
+        //SPDLOG_DEBUG("{}", s);
+        ////results.push_back(unquote(s));
+        //results.push_back(s);
+        ////results.push_back(s);
+      //});
   return results;
 }
 
@@ -186,7 +204,6 @@ void show_res(RestClient::Response res) {
 
 /** List all gists found for the user */
 void list_gists(RestClient::HeaderFields headers) {
-  RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
   http_send(headers, "GET", GIST_ENDPOINT);
 }
 
@@ -261,4 +278,40 @@ void update_gist(arguments args, RestClient::HeaderFields headers) {
 
   SPDLOG_DEBUG("JSON:\n{}", params.dump(INDENT_LEVEL));
   http_send(headers, "PATCH", query, params.dump());
+}
+
+/** Searches gist by ID, filename, or date
+TODO: Add option to mass update gists by matching filename, or by dates */
+void search_gist(arguments args, RestClient::HeaderFields headers) {
+  // Handle user inputs
+  auto id     = std::string(args.gist.id);
+  SPDLOG_DEBUG("Gist ID: {}", id);
+
+  // TODO: When stubbing the implementation for these functions, use prepared json files
+
+  // Get all the results
+  RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
+  auto res = send_req(con, "GET", GIST_ENDPOINT);
+  //log_res(res);
+  auto json_res = nlohmann::json::parse(res.body);
+
+  std::vector<std::vector<std::string>> results;
+
+  for(auto it: json_res)
+    results.push_back(search(it));
+
+  //std::for_each(json_res.begin(), json_res.end(),
+      //[results] (nlohmann::json& gist) mutable {
+        //results.push_back(search(gist));
+      //});
+
+  SPDLOG_DEBUG("Results:");
+  for (auto it: results)
+    for (auto gist : it)
+      fmt::print("{}\n", gist);
+
+  //for (auto it: json_res) {
+    //auto res = search(it);
+  //}
+  //search(json_res);
 }
