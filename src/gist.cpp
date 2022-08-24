@@ -81,16 +81,18 @@ nlohmann::json get_json(RestClient::Connection* con, std::string query) {
 // Search
 /** Returns searched results as raw urls
   TODO: Return nlohmann json object instead with the full objects instead. */
-std::vector<std::string> search(nlohmann::json& res) {
+//std::vector<std::string> search(nlohmann::json& res) {
+std::vector<nlohmann::json> search(nlohmann::json& res) {
   auto files = res["files"];
-  std::vector<std::string> results;
+  //std::vector<std::string> results;
+  std::vector<nlohmann::json> results;
 
   for (auto file: files) {
-      SPDLOG_DEBUG("{}", file.dump(INDENT_LEVEL));
-      std::string s = file["raw_url"];
-      SPDLOG_DEBUG("{}", s);
-      results.push_back(s);
-
+      //SPDLOG_DEBUG("{}", file.dump(INDENT_LEVEL));
+      //std::string s = file["raw_url"];
+      //SPDLOG_DEBUG("{}", s);
+      //results.push_back(s);
+      results.push_back(file);
   }
   //std::for_each(files.begin(), files.end(),
       //[results] (nlohmann::json& gist) mutable {
@@ -283,35 +285,101 @@ void update_gist(arguments args, RestClient::HeaderFields headers) {
 /** Searches gist by ID, filename, or date
 TODO: Add option to mass update gists by matching filename, or by dates */
 void search_gist(arguments args, RestClient::HeaderFields headers) {
-  // Handle user inputs
-  auto id     = std::string(args.gist.id);
-  SPDLOG_DEBUG("Gist ID: {}", id);
-
   // TODO: When stubbing the implementation for these functions, use prepared json files
-
-  // Get all the results
   RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
   auto res = send_req(con, "GET", GIST_ENDPOINT);
-  //log_res(res);
   auto json_res = nlohmann::json::parse(res.body);
 
-  std::vector<std::vector<std::string>> results;
+  //std::vector<std::vector<std::string>> results;
+  //std::vector<std::vector<nlohmann::json>> results;
+  //for(auto it: json_res)
+    //results.push_back(search(it));
 
-  for(auto it: json_res)
-    results.push_back(search(it));
+  // Filter
+  auto results = filter_gists(args, json_res);
 
-  //std::for_each(json_res.begin(), json_res.end(),
-      //[results] (nlohmann::json& gist) mutable {
-        //results.push_back(search(gist));
-      //});
-
+  // Show
   SPDLOG_DEBUG("Results:");
   for (auto it: results)
     for (auto gist : it)
-      fmt::print("{}\n", gist);
+      fmt::print("{}\n", gist.dump(INDENT_LEVEL));
+
+
+  // Handle user inputs
+  //auto id     = std::string(args.gist.id);
+  //SPDLOG_DEBUG("Gist ID: {}", id);
+
+
+  // Get all the results
+  //log_res(res);
+
+  // Initialize results
+
+
 
   //for (auto it: json_res) {
     //auto res = search(it);
   //}
   //search(json_res);
 }
+
+/** Performs filtering by id, file name or date */
+//void filter_gists(arguments args, RestClient::HeaderFields headers, std::vector<std::vector<nlohmann::json>> gists) {
+//void filter_gists(arguments args, RestClient::HeaderFields headers, nlohmann::json json_res) {
+std::vector<std::vector<nlohmann::json>> filter_gists(arguments args, nlohmann::json json_res) {
+  auto filter_type = args.args[1];
+  std::vector<std::vector<nlohmann::json>> results;
+
+  if (strcmp(filter_type, "id") == 0) {
+    auto id = std::string(args.gist.id);
+    SPDLOG_DEBUG("Gist ID: {}", id);
+
+    for (auto gist: json_res) {
+      if (gist["id"] == id) {
+        std::vector<nlohmann::json> container;
+        container.push_back(gist);
+        results.push_back(container);
+        break;
+      }
+    }
+    //return results;
+
+    // For every gist
+    //for (auto gist: gists) {
+      //if (gist["id"] == "id") {
+        //results.push_back(gist);
+        //break;
+      //}
+      // For every file
+      //for (auto file: gist) {
+        //if (file["filename"] == )
+        ////std::copy_if(foo.begin(), foo.end(), std::back_inserter(bar), [](int i){return i>=0;} );
+      //}
+    //}
+    //std::copy_if(foo.begin(), foo.end(), std::back_inserter(bar), [](int i){return i>=0;} );
+
+  } else if (strcmp(filter_type, "name") == 0) {
+    auto fname = std::string(args.gist.filename);
+    SPDLOG_DEBUG("Filename: {}", fname);
+
+    //std::vector<std::vector<nlohmann::json>> results;
+    for (auto gist: json_res)
+      for (auto file: gist)
+        if (file["filename"] == fname) 
+          results.push_back(gist);
+
+  } else if (strcmp(filter_type, "date") == 0) {
+  } else {
+  }
+  return results;
+}
+
+/** Performs filtering by id, file name or date */
+//void filter_gists(arguments args, RestClient::HeaderFields headers, std::vector<std::vector<std::string>> gists) {
+  //auto filter_type = args.args[1];
+  //if (strcmp(filter_type, "id") == 0) {
+  //} else if (strcmp(filter_type, "name") == 0) {
+  //} else if (strcmp(filter_type, "date") == 0) {
+  //} else {
+  //}
+//}

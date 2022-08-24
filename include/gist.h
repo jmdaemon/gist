@@ -48,7 +48,7 @@ static const unsigned int INDENT_LEVEL = 4;
 
 // Gist functions
 std::tuple<std::string, std::string> parse_config(std::string path);
-std::vector<std::string> search(nlohmann::json& res);
+//std::vector<std::string> search(nlohmann::json& res);
 std::tm parse_datetime(std::string datetime, std::string format);
 
 // HTTP requests
@@ -61,7 +61,8 @@ nlohmann::json create_json(arguments args, std::string conts);
 nlohmann::json get_json(RestClient::Connection* con, std::string query);
 
 // Gist search functions
-std::vector<std::string> search(nlohmann::json& res);
+//std::vector<std::string> search(nlohmann::json& res);
+std::vector<nlohmann::json> search(nlohmann::json& res);
 std::vector<nlohmann::json> search_date(nlohmann::json& res, std::string date, bool search_modified, RELTIME reltime);
 nlohmann::json search_id(nlohmann::json& res, std::string id);
 std::vector<nlohmann::json> search_filename(nlohmann::json res, std::string file);
@@ -71,6 +72,9 @@ void log_res(RestClient::Response res);
 void log_gist(RestClient::Response res);
 void http_send(RestClient::HeaderFields headers, std::string req_type, std::string query, std::string params = "");
 void show_res(RestClient::Response res);
+
+//std::vector<std::vector<nlohmann::json>> filter_gists(arguments args, RestClient::HeaderFields headers, nlohmann::json json_res);
+std::vector<std::vector<nlohmann::json>> filter_gists(arguments args, nlohmann::json json_res);
 
 void list_gists(RestClient::HeaderFields headers);
 void new_gist(arguments args, RestClient::HeaderFields headers);
