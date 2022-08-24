@@ -72,15 +72,6 @@ RestClient::Response send_req(RestClient::Connection* con, std::string req_type,
   }
 }
 
-/** Parse arbitrary datetime strings
-   e.g: 2021-07-14T02:10:41Z */
-std::tm parse_datetime(std::string datetime, std::string format) {
-  std::tm tm = {};
-  std::stringstream ss(datetime);
-  ss >> std::get_time(&tm, format.c_str());
-  return tm;
-}
-
 /** Returns searched results if the gist date is later than the specified date */
 std::vector<nlohmann::json> search_date(nlohmann::json& gist, std::tm tm, std::string date_type, RELTIME reltime) {
   std::vector<nlohmann::json> results;

@@ -11,9 +11,7 @@
 // Standard Library
 #include <algorithm>
 #include <cstdio>
-#include <chrono>
 #include <exception>
-#include <iomanip>
 #include <istream>
 #include <optional>
 #include <string>
@@ -45,8 +43,6 @@ static const std::string GIST_ENDPOINT = "/gists";
 static const std::string GIST_DATE_FORMAT = "%FT%T%z"; // ISO 8601 Format, 2021-07-14T02:10:41Z
 static const std::string GIST_CONFIG_PATH = std::string(getenv("HOME")) + "/.config/gist/config.toml";
 static const unsigned int INDENT_LEVEL = 4;
-
-std::tm parse_datetime(std::string datetime, std::string format);
 
 // Helper functions
 std::tuple<std::string, std::string> parse_config(std::string path);
