@@ -9,11 +9,12 @@
 static const std::string gist_file = "./samples/gists.p1.json";
 
 // Helper Functions
-void test_date(nlohmann::json json_res, std::tm tm, std::string date_type, RELTIME reltime) {
+void test_date(nlohmann::json json_res, std::tm tm, std::string date_type, RELTIME reltime, int size) {
     std::vector<nlohmann::json> results;
     for (auto gist: json_res)
       results.push_back(search_date(gist, tm, date_type, reltime));
     show_results(results, false);
+    CHECK(results.size() == size); // We should get the right number of results
 }
 
 // Sanity checks
@@ -39,22 +40,24 @@ TEST_CASE("JSON objects can be properly formatted") {
 }
 
 TEST_CASE("search_date() filters the correct dates") {
-  std::string gists(read_file(gist_file.c_str()));
-  auto date = "";
+  const char* file = read_file(gist_file.c_str());
+  std::string gists(file);
+  auto date = "2022-08-23T21:37:26Z";
   auto json_res = nlohmann::json::parse(gists);
   auto date_type = "created_at";
   std::tm tm = parse_datetime(date, GIST_DATE_FORMAT);
 
   SUBCASE("Filter exact matches only") {
     fmt::print("Exact matches\n");
-    test_date(json_res, tm, date_type, EXACT);
+    test_date(json_res, tm, date_type, EXACT, 30);
   }
   SUBCASE("Filter only later dates") {
     fmt::print("Matches after date\n");
-    test_date(json_res, tm, date_type, AFTER);
+    test_date(json_res, tm, date_type, AFTER, 30);
   }
   SUBCASE("Filter only earlier dates") {
     fmt::print("Matches before date\n");
-    test_date(json_res, tm, date_type, BEFORE);
+    test_date(json_res, tm, date_type, BEFORE, 30);
   }
+  free((void*) file);
 }

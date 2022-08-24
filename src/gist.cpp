@@ -102,7 +102,7 @@ nlohmann::json search_date(nlohmann::json& gist, std::tm tm, std::string date_ty
     result = gist;
   else if ((diff == 0) && (reltime == EXACT))
     result = gist;
-  else if ((diff < 0) && reltime == BEFORE)
+  else if ((diff < 0) && (reltime == BEFORE))
     result = gist;
   return result;
 }
