@@ -72,12 +72,6 @@ RestClient::Response send_req(RestClient::Connection* con, std::string req_type,
   }
 }
 
-/** Get json object from http response */
-nlohmann::json get_json(RestClient::Connection* con, std::string query) {
-  auto result = nlohmann::json::parse(send_req(con, "GET", query).body);
-  return result;
-}
-
 /** Parse arbitrary datetime strings
    e.g: 2021-07-14T02:10:41Z */
 std::tm parse_datetime(std::string datetime, std::string format) {
@@ -106,24 +100,6 @@ std::vector<nlohmann::json> search_date(nlohmann::json& gist, std::tm tm, std::s
   else if ((diff < 0) && reltime == BEFORE)
     results.push_back(gist);
 
-  return results;
-}
-
-/** Return gist by matching id */
-nlohmann::json search_id(nlohmann::json& res, std::string id) {
-  nlohmann::json result = nullptr;
-  for (auto gist : res)
-      if (gist["id"] == id)
-        result = gist;
-  return result;
-}
-
-/** Return gists by matching filename */
-std::vector<nlohmann::json> search_filename(nlohmann::json res, std::string file) {
-  std::vector<nlohmann::json> results;
-  for (auto gist : res["files"]) 
-    if (gist["filename"] == file)
-      results.push_back(gist);
   return results;
 }
 
@@ -303,9 +279,8 @@ std::vector<std::vector<nlohmann::json>> filter_gists(arguments args, nlohmann::
       auto tm = parse_datetime(date, GIST_DATE_FORMAT);
       auto date_type = (search_modified) ? "updated_at" : "created_at";
 
-      for (auto gist: json_res) {
+      for (auto gist: json_res) 
         results.push_back(search_date(gist, tm, date_type, reltime));
-      }
       break;
      }
   }

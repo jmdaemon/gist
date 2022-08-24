@@ -46,36 +46,27 @@ static const std::string GIST_DATE_FORMAT = "%FT%T%z"; // ISO 8601 Format, 2021-
 static const std::string GIST_CONFIG_PATH = std::string(getenv("HOME")) + "/.config/gist/config.toml";
 static const unsigned int INDENT_LEVEL = 4;
 
-// Gist functions
-std::tuple<std::string, std::string> parse_config(std::string path);
-//std::vector<std::string> search(nlohmann::json& res);
 std::tm parse_datetime(std::string datetime, std::string format);
+
+// Helper functions
+std::tuple<std::string, std::string> parse_config(std::string path);
+
+void log_res(RestClient::Response res);
+void log_gist(RestClient::Response res);
+void http_send(RestClient::HeaderFields headers, std::string req_type, std::string query, std::string params = "");
+void show_res(RestClient::Response res);
+
+// JSON
+nlohmann::json create_json(arguments args, std::string conts);
+std::vector<nlohmann::json> search_date(nlohmann::json& res, std::string date, bool search_modified, RELTIME reltime);
+std::vector<std::vector<nlohmann::json>> filter_gists(arguments args, nlohmann::json json_res);
 
 // HTTP requests
 RestClient::HeaderFields create_headers(std::string token);
 RestClient::Connection* connect(std::string url, RestClient::HeaderFields* headers = nullptr);
 RestClient::Response send_req(RestClient::Connection* con, std::string req_type, std::string query, std::string params = "");
 
-// Json
-nlohmann::json create_json(arguments args, std::string conts);
-nlohmann::json get_json(RestClient::Connection* con, std::string query);
-
-// Gist search functions
-//std::vector<std::string> search(nlohmann::json& res);
-//std::vector<nlohmann::json> search(nlohmann::json& res);
-std::vector<nlohmann::json> search_date(nlohmann::json& res, std::string date, bool search_modified, RELTIME reltime);
-nlohmann::json search_id(nlohmann::json& res, std::string id);
-std::vector<nlohmann::json> search_filename(nlohmann::json res, std::string file);
-
 // Gist commands
-void log_res(RestClient::Response res);
-void log_gist(RestClient::Response res);
-void http_send(RestClient::HeaderFields headers, std::string req_type, std::string query, std::string params = "");
-void show_res(RestClient::Response res);
-
-//std::vector<std::vector<nlohmann::json>> filter_gists(arguments args, RestClient::HeaderFields headers, nlohmann::json json_res);
-std::vector<std::vector<nlohmann::json>> filter_gists(arguments args, nlohmann::json json_res);
-
 void list_gists(RestClient::HeaderFields headers);
 void new_gist(arguments args, RestClient::HeaderFields headers);
 void create_gist(arguments args, RestClient::HeaderFields headers);
