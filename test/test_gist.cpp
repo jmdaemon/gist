@@ -9,10 +9,10 @@
 static const std::string gist_file = "./samples/gists.p1.json";
 
 // Helper Functions
-void test_date(nlohmann::json json_res, std::tm tm, std::string date_type, RELTIME reltime, int size) {
+void test_date(nlohmann::json json_res, std::string date, std::string date_type, RELTIME reltime, int size) {
     std::vector<nlohmann::json> results;
     for (auto gist: json_res)
-      results.push_back(search_date(gist, tm, date_type, reltime));
+      results.push_back(search_date(gist, date, date_type, reltime));
     results = filter_null(results);
     fmt::print("{}\n", results.size());
     show_results(results, true);
@@ -47,24 +47,23 @@ TEST_CASE("search_date() filters the correct dates") {
   auto date = "2022-08-23T21:37:26Z";
   auto json_res = nlohmann::json::parse(gists);
   auto date_type = "created_at";
-  auto tm = parse_datetime(date, GIST_DATE_FORMAT);
 
   // TODO: For some reasons these don't work as intended
   SUBCASE("Filter exact matches only") {
     // This returns too many cases
     // This should only return exactly one case
     fmt::print("Exact matches\n");
-    test_date(json_res, tm, date_type, EXACT, 30);
+    test_date(json_res, date, date_type, EXACT, 30);
   }
   SUBCASE("Filter only later dates") {
     // This returns too little cases
     fmt::print("Matches after date\n");
-    test_date(json_res, tm, date_type, AFTER, 0);
+    test_date(json_res, date, date_type, AFTER, 0);
   }
   SUBCASE("Filter only earlier dates") {
     // This returns too little cases
     fmt::print("Matches before date\n");
-    test_date(json_res, tm, date_type, BEFORE, 0);
+    test_date(json_res, date, date_type, BEFORE, 0);
   }
   free((void*) file);
 }

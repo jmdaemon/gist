@@ -87,22 +87,16 @@ nlohmann::json create_json(arguments args) {
 }
 
 /** Returns searched results if the gist date is later than the specified date */
-nlohmann::json search_date(nlohmann::json& gist, std::tm tm, std::string date_type, RELTIME reltime) {
+nlohmann::json search_date(nlohmann::json& gist, std::string date, std::string date_type, RELTIME reltime) {
   nlohmann::json result;
   auto gist_date = gist[date_type];
-  auto gist_tm = parse_datetime(gist_date, GIST_DATE_FORMAT);
-  
-  // Find the difference between the two dates 
-  auto d1 = std::mktime(&tm);
-  auto d2 = std::mktime(&gist_tm);
-  auto diff = difftime(d1, d2);
 
   // Filter results according to reltime
-  if ((diff == 0) && (reltime == EXACT))
+  if ((date == gist_date) && (reltime == EXACT))
     result = gist;
-  else if ((diff > 0) && (reltime == AFTER))
+  else if ((date > gist_date) && (reltime == AFTER))
     result = gist;
-  else if ((diff < 0) && (reltime == BEFORE))
+  else if ((date < gist_date) && (reltime == BEFORE))
     result = gist;
   return result;
 }
@@ -147,11 +141,10 @@ std::vector<nlohmann::json> filter_gists(arguments args, nlohmann::json json_res
       auto date = args.gist.creation;
 
       SPDLOG_DEBUG("Creation Date: {}", date);
-      auto tm = parse_datetime(date, GIST_DATE_FORMAT);
       auto date_type = (args.search_modified) ? "updated_at" : "created_at";
 
       for (auto gist: json_res) 
-        results.push_back(search_date(gist, tm, date_type, reltime));
+        results.push_back(search_date(gist, date, date_type, reltime));
 
       break;
      }
