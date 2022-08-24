@@ -7,3 +7,6 @@
 [submodule "subprojects/utility"]
 	path = subprojects/utility
 	url = https://github.com/jmdaemon/utility
+[submodule "themes/doxygen-awesome-css"]
+	path = themes/doxygen-awesome-css
+	url = https://github.com/jothepro/doxygen-awesome-css.git
