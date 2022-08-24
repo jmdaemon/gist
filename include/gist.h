@@ -2,6 +2,7 @@
 #ifndef GIST_H
 #define GIST_H
 
+// Enable SPDLOG macros
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 
 // Imports
@@ -11,8 +12,6 @@
 // Standard Library
 #include <algorithm>
 #include <cstdio>
-#include <exception>
-#include <istream>
 #include <optional>
 #include <string>
 #include <tuple>
@@ -34,9 +33,7 @@
 
 // Constants
 static const std::string logger_name = "gist";
-/* [2022-08-20 23:16:43.347] [debug] [app.cpp:3] Message! */
-static const std::string logger_format = "[%Y-%m-%d %H.%M.%S.%e] [%^%l%$] [%s:%#] %v";
-
+static const std::string logger_format = "[%Y-%m-%d %H.%M.%S.%e] [%^%l%$] [%s:%#] %v"; /* [2022-08-20 23:16:43.347] [debug] [app.cpp:3] Message! */
 static const std::string GITHUB_API_URL = "https://api.github.com";
 static const std::string GITHUB_ACCEPT = "application/vnd.github+json";
 static const std::string GIST_ENDPOINT = "/gists";
@@ -55,10 +52,7 @@ void show_results(std::vector<nlohmann::json> gists, bool urls_only);
 
 // JSON
 nlohmann::json create_json(arguments args, std::string conts);
-//std::vector<nlohmann::json> search_date(nlohmann::json& res, std::string date, bool search_modified, RELTIME reltime);
-
 nlohmann::json search_date(nlohmann::json& gist, std::tm tm, std::string date_type, RELTIME reltime);
-//std::vector<std::vector<nlohmann::json>> filter_gists(arguments args, nlohmann::json json_res);
 std::vector<nlohmann::json> filter_gists(arguments args, nlohmann::json json_res);
 
 // HTTP requests

@@ -187,8 +187,7 @@ void delete_gist(arguments args, RestClient::HeaderFields headers) {
   }
 }
 
-/** Updates a gist from matching id
-TODO: Add option to mass update gists by matching filename, or by dates */
+/** Updates a gist from matching id */
 void update_gist(arguments args, RestClient::HeaderFields headers) {
   auto id     = std::string(args.gist.id);
   auto fname  = std::string(args.gist.filename);
