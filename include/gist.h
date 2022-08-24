@@ -51,6 +51,7 @@ void show_res(RestClient::Response res);
 void show_results(std::vector<nlohmann::json> gists, bool urls_only);
 
 // JSON
+nlohmann::json create_json(arguments args);
 nlohmann::json create_json(std::string fname, std::string conts, std::string desc, bool priv);
 nlohmann::json search_date(nlohmann::json& gist, std::tm tm, std::string date_type, RELTIME reltime);
 std::vector<nlohmann::json> filter_gists(arguments args, nlohmann::json json_res);

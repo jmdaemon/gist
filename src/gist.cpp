@@ -82,6 +82,10 @@ nlohmann::json create_json(std::string fname, std::string conts, std::string des
   return req;
 }
 
+nlohmann::json create_json(arguments args) {
+  return create_json(args.gist.filename, args.gist.conts, args.gist.desc, args.priv);
+}
+
 /** Returns searched results if the gist date is later than the specified date */
 nlohmann::json search_date(nlohmann::json& gist, std::tm tm, std::string date_type, RELTIME reltime) {
   nlohmann::json result;
