@@ -33,16 +33,14 @@ static const struct argp_option options[] = {
   {"verbose"  , 'v', 0, 0, "Display program output and debugging information", 0},
 
   {"private"  , 'p', 0, 0, "Makes your gist private", 0},
-  {"raw"      , 'r', "Output raw url of gist", 0},
+  {"raw"      , 'r', 0, 0, "Output raw url of gist", 0},
 
-  {"config"   , 'g', "Specify gist config for user", 0},
-  {"desc"     , 'd', "Adds a description to your gist", 0},
-
-  // Search flags
-  {"content"  , 'o', "Specify gist content string", 0},
-  {"rename"   , 'n', "Specify new gist filename", 0},
-  {"id"       , 'i', "Specify gist id", 0},
-  {"filename" , 'f', "Specify gist file name", 0},
+  {"config"   , 'g', "Path to gist config (Default: ~/.config/gist/config.toml)", 0},
+  {"id"       , 'i', "Gist id", 0},
+  {"filename" , 'f', "Gist file name", 0},
+  {"desc"     , 'd', "Gist description", 0},
+  {"content"  , 'o', "Gist contents", 0},
+  {"rename"   , 'n', "Rename a gist file", 0},
   {"creation" , 'c', "Specify gist creation date", 0},
   {"modified" , 'm', "Specify gist modification date", 0},
   {}
