@@ -107,6 +107,13 @@ nlohmann::json search_date(nlohmann::json& gist, std::tm tm, std::string date_ty
   return result;
 }
 
+std::vector<nlohmann::json> filter_null(std::vector<nlohmann::json> results) {
+  results.erase(std::remove_if(results.begin(), results.end(), [] (nlohmann::json& gist) {
+        return ((gist == nullptr) || (gist == NULL) || gist.empty()) ? true : false;
+        }), results.end());
+  return results;
+}
+
 /** Performs filtering by id, file name or date */
 std::vector<nlohmann::json> filter_gists(arguments args, nlohmann::json json_res) {
   const char* filter_type = args.args[1];
@@ -145,9 +152,11 @@ std::vector<nlohmann::json> filter_gists(arguments args, nlohmann::json json_res
 
       for (auto gist: json_res) 
         results.push_back(search_date(gist, tm, date_type, reltime));
+
       break;
      }
   }
+  results = filter_null(results); // Remove all null elements
   return results;
 }
 // HTTP requests

@@ -13,6 +13,8 @@ void test_date(nlohmann::json json_res, std::tm tm, std::string date_type, RELTI
     std::vector<nlohmann::json> results;
     for (auto gist: json_res)
       results.push_back(search_date(gist, tm, date_type, reltime));
+    results = filter_null(results);
+    //show_results(results, true);
     show_results(results, false);
     CHECK(results.size() == size); // We should get the right number of results
 }
@@ -53,11 +55,11 @@ TEST_CASE("search_date() filters the correct dates") {
   }
   SUBCASE("Filter only later dates") {
     fmt::print("Matches after date\n");
-    test_date(json_res, tm, date_type, AFTER, 30);
+    test_date(json_res, tm, date_type, AFTER, 0);
   }
   SUBCASE("Filter only earlier dates") {
     fmt::print("Matches before date\n");
-    test_date(json_res, tm, date_type, BEFORE, 30);
+    test_date(json_res, tm, date_type, BEFORE, 0);
   }
   free((void*) file);
 }
