@@ -33,15 +33,6 @@ nlohmann::json create_json(std::string fname, std::string conts, std::string des
   return req;
 }
 
-nlohmann::json create_json(arguments args, std::string conts) {
-  nlohmann::json req;
-  req["description"] = std::string(args.gist.desc, strlen(args.gist.desc));
-  req["public"] = !args.priv;
-  req["files"][std::string(args.gist.filename, strlen(args.gist.filename))]
-    ["content"] = conts;
-  return req;
-}
-
 /** Create request headers */
 RestClient::HeaderFields create_headers(std::string token) {
   RestClient::HeaderFields headers;
@@ -73,9 +64,7 @@ RestClient::Response send_req(RestClient::Connection* con, std::string req_type,
 }
 
 /** Returns searched results if the gist date is later than the specified date */
-//std::vector<nlohmann::json> search_date(nlohmann::json& gist, std::tm tm, std::string date_type, RELTIME reltime) {
 nlohmann::json search_date(nlohmann::json& gist, std::tm tm, std::string date_type, RELTIME reltime) {
-  //std::vector<nlohmann::json> results;
   nlohmann::json result;
   std::string gist_date = gist[date_type];
   auto gist_tm = parse_datetime(gist_date, GIST_DATE_FORMAT);
@@ -87,14 +76,11 @@ nlohmann::json search_date(nlohmann::json& gist, std::tm tm, std::string date_ty
 
   // Filter results according to reltime
   if ((diff > 0) && (reltime == AFTER))
-    //results.push_back(gist);
     result = gist;
   else if ((diff == 0) && (reltime == EXACT))
     result = gist;
   else if ((diff < 0) && reltime == BEFORE)
     result = gist;
-    //results.push_back(gist);
-
   return result;
 }
 
@@ -171,43 +157,33 @@ void create_gist(arguments args, RestClient::HeaderFields headers) {
   http_send(headers, "POST", GIST_ENDPOINT, params.dump());
 }
 
-/** Deletes a gist from matching id
-TODO: Add option to mass delete gists by matching filename, or by dates */
+/** Deletes a gist from matching id */
 void delete_gist(arguments args, RestClient::HeaderFields headers) {
   auto filter_type = args.args[1];
-  if ((filter_type == nullptr) || strcmp(filter_type, "") == 0) {
+  if ((filter_type == nullptr) || (strcmp(filter_type, "") == 0)) {
     auto id = std::string(args.gist.id);
     SPDLOG_DEBUG("Gist ID: {}", id);
 
     auto query = fmt::format("{}/{}", GIST_ENDPOINT, id);
     http_send(headers, "DELETE", query);
   } else {
-    // Filter gists
-
-    //RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
-    //auto res = send_req(con, "GET", GIST_ENDPOINT);
-    //auto json_res = nlohmann::json::parse(res.body);
-    //auto results = filter_gists(args, json_res);
+    // Get and filter
+    RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
+    auto res = send_req(con, "GET", GIST_ENDPOINT);
+    auto json_res = nlohmann::json::parse(res.body);
+    auto results = filter_gists(args, json_res);
 
     // Wrap up the ids
+    std::vector<std::string> ids;
+    for (auto gist: results)
+      ids.push_back(gist["id"]);
 
     // Send the requests
-    //for (auto gist: results) {
-      //for (auto asdf: gist) {
-      //}
-    //}
-      //for (auto file: gist) {
-        //file
-      //}
-
-    //if (strcmp(filter_type, "name")) {
-
-    //}
-    //auto id = std::string(args.gist.id);
-    //SPDLOG_DEBUG("Gist ID: {}", id);
-
-    //auto query = fmt::format("{}/{}", GIST_ENDPOINT, id);
-    //http_send(headers, "DELETE", query);
+    for (auto id: ids) {
+      fmt::print("Deleting: {}", id);
+      auto query = fmt::format("{}/{}", GIST_ENDPOINT, id);
+      http_send(headers, "DELETE", query);
+    }
   }
 }
 
