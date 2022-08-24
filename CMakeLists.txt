@@ -57,7 +57,9 @@ include(tomlplusplus)
 include(json)
 
 # Specify project dependencies
+# PKG_DEPENDS: Library names to link the output files
 # DEB_DEPENDS: Debian packages that provide the libraries the project depends upon
+set(PKG_DEPENDS pcre utility jolly spdlog tomlplusplus nlohmann_json restclient-cpp)
 set(DEB_DEPENDS libc)
 
 # Include header files
