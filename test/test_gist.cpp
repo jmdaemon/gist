@@ -13,25 +13,9 @@ void test_date(nlohmann::json json_res, std::tm tm, std::string date_type, RELTI
     std::vector<nlohmann::json> results;
     for (auto gist: json_res)
       results.push_back(search_date(gist, tm, date_type, reltime));
-    //results = filter_null(results);
-    filter_null(results);
+    results = filter_null(results);
     fmt::print("{}\n", results.size());
-    for (auto it: results) {
-      if (!it.empty()) {
-          //fmt::print("{}\n", it.at("raw_url"));
-        //auto ref = std::ref(it);
-        //if ((ref != nullptr) && (ref.get() != nullptr) && (ref.get() != NULL))
-        if (it.contains("raw_url"))
-          fmt::print("{}\n", it["raw_url"]);
-          //fmt::print("{}\n", ref.get()["raw_url"]);
-      }
-        //fmt::print("Something");
-        //for (auto at: it)
-          //if (!at.empty())
-            //fmt::print("{}\n", it["raw_url"]);
-    }
-    //show_results(results, true);
-    //show_results(results, false);
+    show_results(results, true);
     CHECK(results.size() == size); // We should get the right number of results
 }
 
