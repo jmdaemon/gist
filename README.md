@@ -117,5 +117,4 @@ More potential features that would make this application really killer:
 - CLI option to receive gist content as output.
 - Manpage to view arguments/options and commands.
 - Doctest unit tests & automated testing.
-- Better documentation
 - Automated releases
