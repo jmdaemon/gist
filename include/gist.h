@@ -46,12 +46,6 @@ static const std::string GIST_DATE_FORMAT = "%FT%T%z"; // ISO 8601 Format, 2021-
 static const std::string GIST_CONFIG_PATH = std::string(getenv("HOME")) + "/.config/gist/config.toml";
 static const unsigned int INDENT_LEVEL = 4;
 
-enum RELTIME {
-  BEFORE,
-  AFTER,
-  EXACT
-};
-
 // Gist functions
 std::tuple<std::string, std::string> parse_config(std::string path);
 std::vector<std::string> search(nlohmann::json& res);
@@ -83,5 +77,6 @@ void new_gist(arguments args, RestClient::HeaderFields headers);
 void create_gist(arguments args, RestClient::HeaderFields headers);
 void delete_gist(arguments args, RestClient::HeaderFields headers);
 void update_gist(arguments args, RestClient::HeaderFields headers);
+void search_gist(arguments args, RestClient::HeaderFields headers);
 
 #endif // GIST_H

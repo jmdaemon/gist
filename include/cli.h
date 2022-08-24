@@ -43,6 +43,7 @@ static const struct argp_option options[] = {
   {"rename"   , 'n', "Rename a gist file", 0},
   {"creation" , 'c', "Specify gist creation date", 0},
   {"modified" , 'm', "Specify gist modification date", 0},
+  {"reltime"  , 't', "Specify relative gist time (before, after, exact)", 0},
   {}
 };
 
@@ -54,6 +55,7 @@ struct arguments {
   bool raw;
   char* config;
   Gist gist;
+  RELTIME reltime;
 };
 
 /** Parse a single option. */

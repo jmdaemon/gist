@@ -8,6 +8,7 @@ struct arguments set_default_args() {
   arguments.verbose = 0;
   arguments.priv = 0;
   arguments.raw = 0;
+  arguments.reltime = EXACT;
   return arguments;
 }
 
@@ -62,6 +63,13 @@ error_t parse_opt (int key, char *arg, struct argp_state *state) {
 
     case 'm':
       arguments->gist.modified = arg;
+      break;
+
+    case 't':
+      if (strcmp("after", arg) == 0)
+        arguments->reltime = AFTER;
+      else if (strcmp("before", arg) == 0)
+        arguments->reltime = BEFORE;
       break;
 
     case ARGP_KEY_ARG:

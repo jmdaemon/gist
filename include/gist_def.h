@@ -19,6 +19,12 @@ typedef struct Gist {
   char* modified;
 } Gist;
 
+typedef enum RELTIME {
+  BEFORE,
+  AFTER,
+  EXACT
+} RELTIME;
+
 #ifdef __cplusplus
 }
 #endif
