@@ -42,15 +42,15 @@ configure_file (
 # Include dependencies
 # CMake modules
 include(FetchContent)
+include(Library)
 
-# Subprojects
-set(USE_AS_SUBPROJECT TRUE)
-set(USE_AS_SUBMODULE FALSE)
-include(jolly)
-include(utility)
-unset(USE_AS_SUBMODULE)
-unset(USE_AS_SUBPROJECT)
+# Include subprojects
+include_subprojects(
+    TOGGLE TRUE
+    GIT_MODULE FALSE
+    INCLUDES jolly utility)
 
+# Include dependencies
 include(restclient-cpp)
 include(spdlog)
 include(tomlplusplus)
