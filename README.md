@@ -2,6 +2,8 @@
 
 A Github gists cli tool
 
+## Table of Contents
+
 1. [Usage](#usage)
 2. [Build](#build)
 3. [Install](#install)
