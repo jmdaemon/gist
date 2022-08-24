@@ -77,11 +77,13 @@ if (BUILD_TESTING AND NOT USE_AS_SUBPROJECT)
 endif()
 
 if (NOT USE_AS_SUBPROJECT)
-include(Docs)
+    # Generate automatic docs with Doxygen
+    include(Docs)
+
+    # Install build artifacts system-wide
+    include(Install)
+
+    # Packages
+    include(InstallRequiredSystemLibraries)
+    include(Debian)
 endif()
-
-include(Install)
-
-# Packages
-include(InstallRequiredSystemLibraries)
-include(Debian)
