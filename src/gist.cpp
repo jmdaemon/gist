@@ -62,11 +62,16 @@ void show_res(RestClient::Response res) {
 
 /** Show filtered gist results */
 void show_results(std::vector<nlohmann::json> gists, bool urls_only) {
-  auto show_urls = [](nlohmann::json &gist) { fmt::print("{}\n", gist["raw_url"]); };
-  auto show_json = [](nlohmann::json &gist) { fmt::print("{}\n", gist.dump(INDENT_LEVEL)); };
+  //auto show_urls = [](nlohmann::json &gist) { if (!gist.empty()) fmt::print("{}\n", gist["raw_url"]); };
+  //auto show_json = [](nlohmann::json &gist) { if (!gist.empty()) fmt::print("{}\n", gist.dump(INDENT_LEVEL)); };
+  auto show_urls = [](nlohmann::json &gist) { if (!gist.empty()) { fmt::print("{}\n", gist["raw_url"]); } };
+  auto show_json = [](nlohmann::json &gist) { if (!gist.empty()) { fmt::print("{}\n", gist.dump(INDENT_LEVEL)); } };
+
   
   SPDLOG_DEBUG("Results:");
-  (urls_only)
+  //(urls_only && (!gists.empty() && (gists != nullptr) && (gists.size() > 0)))
+  //(urls_only)
+  (urls_only && (gists != nullptr) && (gists.size() > 0) && !gists.empty())
     ? std::for_each(gists.begin(), gists.end(), show_urls)
     : std::for_each(gists.begin(), gists.end(), show_json);
 }
@@ -107,7 +112,7 @@ nlohmann::json search_date(nlohmann::json& gist, std::tm tm, std::string date_ty
   return result;
 }
 
-std::vector<nlohmann::json> filter_null(std::vector<nlohmann::json> results) {
+std::vector<nlohmann::json> filter_null(std::vector<nlohmann::json>& results) {
   results.erase(std::remove_if(results.begin(), results.end(), [] (nlohmann::json& gist) {
         return ((gist == nullptr) || (gist == NULL) || gist.empty()) ? true : false;
         }), results.end());
