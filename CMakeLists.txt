@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19) # CMake 3.9
 
 project (gist
-    VERSION 1.2.1
+    VERSION 1.2.2
     DESCRIPTION "Github gists cli tool"
     LANGUAGES C CXX)
 

@@ -48,22 +48,17 @@ TEST_CASE("search_date() filters the correct dates") {
   auto json_res = nlohmann::json::parse(gists);
   auto date_type = "created_at";
 
-  // TODO: For some reasons these don't work as intended
   SUBCASE("Filter exact matches only") {
-    // This returns too many cases
-    // This should only return exactly one case
     fmt::print("Exact matches\n");
-    test_date(json_res, date, date_type, EXACT, 30);
+    test_date(json_res, date, date_type, EXACT, 1);
   }
   SUBCASE("Filter only later dates") {
-    // This returns too little cases
     fmt::print("Matches after date\n");
     test_date(json_res, date, date_type, AFTER, 0);
   }
   SUBCASE("Filter only earlier dates") {
-    // This returns too little cases
     fmt::print("Matches before date\n");
-    test_date(json_res, date, date_type, BEFORE, 0);
+    test_date(json_res, date, date_type, BEFORE, 29);
   }
   free((void*) file);
 }

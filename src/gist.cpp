@@ -94,9 +94,9 @@ nlohmann::json search_date(nlohmann::json& gist, std::string date, std::string d
   // Filter results according to reltime
   if ((date == gist_date) && (reltime == EXACT))
     result = gist;
-  else if ((date > gist_date) && (reltime == AFTER))
+  else if ((date < gist_date) && (reltime == AFTER))
     result = gist;
-  else if ((date < gist_date) && (reltime == BEFORE))
+  else if ((date > gist_date) && (reltime == BEFORE))
     result = gist;
   return result;
 }
