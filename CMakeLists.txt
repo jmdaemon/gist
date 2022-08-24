@@ -8,7 +8,7 @@ project (gist
 # Variable Toggles
 if (NOT USE_AS_SUBPROJECT)
     set(NO_COLOR OFF CACHE INTERNAL "Toggles colored output errors")
-    set(BUILD_DOC OFF CACHE INTERNAL "Build documentation")
+    set(BUILD_DOC ON CACHE INTERNAL "Build documentation")
     set(ENABLE_LOGGING OFF CACHE INTERNAL "View the logging statements/debug info")
     set(LOG_LEVEL 0 CACHE INTERNAL "Enable only specific log levels")
 endif()
@@ -74,6 +74,10 @@ if (BUILD_TESTING AND NOT USE_AS_SUBPROJECT)
     include(MakeTests)
     include(CTest)
     add_subdirectory(test)
+endif()
+
+if (NOT USE_AS_SUBPROJECT)
+include(Docs)
 endif()
 
 include(Install)
