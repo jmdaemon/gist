@@ -51,11 +51,15 @@ void log_res(RestClient::Response res);
 void log_gist(RestClient::Response res);
 void http_send(RestClient::HeaderFields headers, std::string req_type, std::string query, std::string params = "");
 void show_res(RestClient::Response res);
+void show_results(std::vector<nlohmann::json> gists, bool urls_only);
 
 // JSON
 nlohmann::json create_json(arguments args, std::string conts);
-std::vector<nlohmann::json> search_date(nlohmann::json& res, std::string date, bool search_modified, RELTIME reltime);
-std::vector<std::vector<nlohmann::json>> filter_gists(arguments args, nlohmann::json json_res);
+//std::vector<nlohmann::json> search_date(nlohmann::json& res, std::string date, bool search_modified, RELTIME reltime);
+
+nlohmann::json search_date(nlohmann::json& gist, std::tm tm, std::string date_type, RELTIME reltime);
+//std::vector<std::vector<nlohmann::json>> filter_gists(arguments args, nlohmann::json json_res);
+std::vector<nlohmann::json> filter_gists(arguments args, nlohmann::json json_res);
 
 // HTTP requests
 RestClient::HeaderFields create_headers(std::string token);

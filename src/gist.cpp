@@ -73,8 +73,10 @@ RestClient::Response send_req(RestClient::Connection* con, std::string req_type,
 }
 
 /** Returns searched results if the gist date is later than the specified date */
-std::vector<nlohmann::json> search_date(nlohmann::json& gist, std::tm tm, std::string date_type, RELTIME reltime) {
-  std::vector<nlohmann::json> results;
+//std::vector<nlohmann::json> search_date(nlohmann::json& gist, std::tm tm, std::string date_type, RELTIME reltime) {
+nlohmann::json search_date(nlohmann::json& gist, std::tm tm, std::string date_type, RELTIME reltime) {
+  //std::vector<nlohmann::json> results;
+  nlohmann::json result;
   std::string gist_date = gist[date_type];
   auto gist_tm = parse_datetime(gist_date, GIST_DATE_FORMAT);
   
@@ -85,13 +87,15 @@ std::vector<nlohmann::json> search_date(nlohmann::json& gist, std::tm tm, std::s
 
   // Filter results according to reltime
   if ((diff > 0) && (reltime == AFTER))
-    results.push_back(gist);
+    //results.push_back(gist);
+    result = gist;
   else if ((diff == 0) && (reltime == EXACT))
-    results.push_back(gist);
+    result = gist;
   else if ((diff < 0) && reltime == BEFORE)
-    results.push_back(gist);
+    result = gist;
+    //results.push_back(gist);
 
-  return results;
+  return result;
 }
 
 // Commands
@@ -170,11 +174,41 @@ void create_gist(arguments args, RestClient::HeaderFields headers) {
 /** Deletes a gist from matching id
 TODO: Add option to mass delete gists by matching filename, or by dates */
 void delete_gist(arguments args, RestClient::HeaderFields headers) {
-  auto id = std::string(args.gist.id);
-  SPDLOG_DEBUG("Gist ID: {}", id);
+  auto filter_type = args.args[1];
+  if ((filter_type == nullptr) || strcmp(filter_type, "") == 0) {
+    auto id = std::string(args.gist.id);
+    SPDLOG_DEBUG("Gist ID: {}", id);
 
-  auto query = fmt::format("{}/{}", GIST_ENDPOINT, id);
-  http_send(headers, "DELETE", query);
+    auto query = fmt::format("{}/{}", GIST_ENDPOINT, id);
+    http_send(headers, "DELETE", query);
+  } else {
+    // Filter gists
+
+    //RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
+    //auto res = send_req(con, "GET", GIST_ENDPOINT);
+    //auto json_res = nlohmann::json::parse(res.body);
+    //auto results = filter_gists(args, json_res);
+
+    // Wrap up the ids
+
+    // Send the requests
+    //for (auto gist: results) {
+      //for (auto asdf: gist) {
+      //}
+    //}
+      //for (auto file: gist) {
+        //file
+      //}
+
+    //if (strcmp(filter_type, "name")) {
+
+    //}
+    //auto id = std::string(args.gist.id);
+    //SPDLOG_DEBUG("Gist ID: {}", id);
+
+    //auto query = fmt::format("{}/{}", GIST_ENDPOINT, id);
+    //http_send(headers, "DELETE", query);
+  }
 }
 
 /** Updates a gist from matching id
@@ -209,16 +243,19 @@ void update_gist(arguments args, RestClient::HeaderFields headers) {
 }
 
 /** Show results */
-void show_results(std::vector<std::vector<nlohmann::json>> results, bool urls_only) {
+//void show_results(std::vector<std::vector<nlohmann::json>> results, bool urls_only) {
+void show_results(std::vector<nlohmann::json> gists, bool urls_only) {
   SPDLOG_DEBUG("Results:");
   if (urls_only) {
-    for (auto it: results)
-      for (auto gist : it)
+    for (auto gist: gists)
         fmt::print("{}\n", gist["raw_url"]);
+      //for (auto gist : it)
+        //fmt::print("{}\n", gist["raw_url"]);
   } else {
-    for (auto it: results)
-      for (auto gist : it)
-        fmt::print("{}\n", gist.dump(INDENT_LEVEL));
+    for (auto gist: gists)
+      fmt::print("{}\n", gist.dump(INDENT_LEVEL));
+      //for (auto gist : it)
+        //fmt::print("{}\n", gist.dump(INDENT_LEVEL));
   }
 }
 
@@ -233,9 +270,9 @@ void search_gist(arguments args, RestClient::HeaderFields headers) {
 }
 
 /** Performs filtering by id, file name or date */
-std::vector<std::vector<nlohmann::json>> filter_gists(arguments args, nlohmann::json json_res) {
+std::vector<nlohmann::json> filter_gists(arguments args, nlohmann::json json_res) {
   const char* filter_type = args.args[1];
-  std::vector<std::vector<nlohmann::json>> results;
+  std::vector<nlohmann::json> results;
 
   switch(hash(filter_type)) {
     case hash("id"): { // Filter by id
@@ -244,19 +281,22 @@ std::vector<std::vector<nlohmann::json>> filter_gists(arguments args, nlohmann::
 
       for (auto gist: json_res) {
         if (gist["id"] == id) {
-          std::vector<nlohmann::json> container;
-          container.push_back(gist);
-          results.push_back(container);
+          //std::vector<nlohmann::json> container;
+          //container.push_back(gist);
+          //results.push_back(container);
+          results.push_back(gist);
           break;
         }
       }
+      break;
     }
     case hash("name"): { // Filter by file name
-      auto fname = std::string(args.gist.filename);
+      //auto fname = std::string(args.gist.filename);
+      std::string fname = std::string(args.gist.filename);
       SPDLOG_DEBUG("Filename: {}", fname);
 
       for (auto gist: json_res)
-        for (auto file: gist)
+        for (auto file: gist["files"])
           if (file["filename"] == fname) 
             results.push_back(gist);
       break;
