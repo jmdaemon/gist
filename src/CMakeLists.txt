@@ -1,4 +1,4 @@
-set(HEADERS ${INCLUDES_DIR} ${INCLUDES_DIR}/utility "${PROJECT_BINARY_DIR}/include" ${jolly_SOURCE_DIR}/include)
+set(HEADERS ${INCLUDES_DIR} ${jolly_SOURCE_DIR}/include)
 set(TARGET gist)
 
 set(LIB_NAME gist)

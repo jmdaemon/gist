@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.19) # CMake 3.9
 
 project (gist
     VERSION 0.2.0
-    DESCRIPTION "Gist CLI tool to interact with the Gist REST api"
+    DESCRIPTION "Github gists cli tool"
     LANGUAGES C CXX)
 
 # Variable Toggles
@@ -52,12 +52,9 @@ unset(USE_AS_SUBMODULE)
 unset(USE_AS_SUBPROJECT)
 
 include(restclient-cpp)
-
-include(cli11)
 include(spdlog)
 include(tomlplusplus)
 include(json)
-include(argparse)
 
 # Specify project dependencies
 # DEB_DEPENDS: Debian packages that provide the libraries the project depends upon
