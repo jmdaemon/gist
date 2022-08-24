@@ -9,6 +9,8 @@ struct arguments set_default_args() {
   arguments.priv = 0;
   arguments.raw = 0;
   arguments.reltime = EXACT;
+
+  arguments.args[1] = ""; // Default to null
   return arguments;
 }
 
@@ -73,7 +75,7 @@ error_t parse_opt (int key, char *arg, struct argp_state *state) {
       break;
 
     case ARGP_KEY_ARG:
-      if (state->arg_num > 1)
+      if (state->arg_num > 2)
         /* Too many arguments. */
         argp_usage (state);
       arguments->args[state->arg_num] = arg;

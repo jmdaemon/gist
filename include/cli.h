@@ -49,7 +49,7 @@ static const struct argp_option options[] = {
 
 /** Used by main to communicate with parse_opt. */
 struct arguments {
-  char *args[1]; /** Commands: list, delete, update, new, search */
+  char *args[2]; /** Commands: [list, delete, update, new, create, search], Optional keyword [id, fname, date] */
   int verbose;
   bool priv;
   bool raw;
