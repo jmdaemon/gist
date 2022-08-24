@@ -43,21 +43,26 @@ TEST_CASE("JSON objects can be properly formatted") {
 
 TEST_CASE("search_date() filters the correct dates") {
   const char* file = read_file(gist_file.c_str());
-  std::string gists(file);
+  auto gists(file);
   auto date = "2022-08-23T21:37:26Z";
   auto json_res = nlohmann::json::parse(gists);
   auto date_type = "created_at";
-  std::tm tm = parse_datetime(date, GIST_DATE_FORMAT);
+  auto tm = parse_datetime(date, GIST_DATE_FORMAT);
 
+  // TODO: For some reasons these don't work as intended
   SUBCASE("Filter exact matches only") {
+    // This returns too many cases
+    // This should only return exactly one case
     fmt::print("Exact matches\n");
     test_date(json_res, tm, date_type, EXACT, 30);
   }
   SUBCASE("Filter only later dates") {
+    // This returns too little cases
     fmt::print("Matches after date\n");
     test_date(json_res, tm, date_type, AFTER, 0);
   }
   SUBCASE("Filter only earlier dates") {
+    // This returns too little cases
     fmt::print("Matches before date\n");
     test_date(json_res, tm, date_type, BEFORE, 0);
   }

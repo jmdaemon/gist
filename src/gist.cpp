@@ -89,7 +89,7 @@ nlohmann::json create_json(arguments args) {
 /** Returns searched results if the gist date is later than the specified date */
 nlohmann::json search_date(nlohmann::json& gist, std::tm tm, std::string date_type, RELTIME reltime) {
   nlohmann::json result;
-  std::string gist_date = gist[date_type];
+  auto gist_date = gist[date_type];
   auto gist_tm = parse_datetime(gist_date, GIST_DATE_FORMAT);
   
   // Find the difference between the two dates 
@@ -98,9 +98,9 @@ nlohmann::json search_date(nlohmann::json& gist, std::tm tm, std::string date_ty
   auto diff = difftime(d1, d2);
 
   // Filter results according to reltime
-  if ((diff > 0) && (reltime == AFTER))
+  if ((diff == 0) && (reltime == EXACT))
     result = gist;
-  else if ((diff == 0) && (reltime == EXACT))
+  else if ((diff > 0) && (reltime == AFTER))
     result = gist;
   else if ((diff < 0) && (reltime == BEFORE))
     result = gist;
