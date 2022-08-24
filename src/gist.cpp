@@ -201,9 +201,6 @@ void new_gist(arguments args, RestClient::HeaderFields headers) {
 
   log_gist(fname, conts, desc, priv);
 
-  // TODO: Create automated test to check if the fields
-  // match up with the inputs for the output json
-
   auto params = create_json(fname, conts, desc, priv);
   SPDLOG_DEBUG("JSON:\n{}", params.dump(INDENT_LEVEL));
   http_send(headers, "POST", GIST_ENDPOINT, params.dump());
@@ -285,7 +282,6 @@ void update_gist(arguments args, RestClient::HeaderFields headers) {
 
 /** Searches gists by ID, filename, or date */
 void search_gist(arguments args, RestClient::HeaderFields headers) {
-  // TODO: When stubbing the implementation for these functions, use prepared json files
   RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
   auto res = send_req(con, "GET", GIST_ENDPOINT);
   auto json_res = nlohmann::json::parse(res.body);
