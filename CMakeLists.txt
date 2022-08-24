@@ -64,6 +64,8 @@ set(INCLUDES_DIR "${PROJECT_SOURCE_DIR}/include")
 set(HEADERS_VERSION "${PROJECT_BINARY_DIR}/include")
 
 # Add subdirectories
+#subdirs(resources src app)
+#add_subdirectory()
 subdirs(resources src app)
 
 if (BUILD_TESTING AND NOT USE_AS_SUBPROJECT)
