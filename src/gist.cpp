@@ -278,7 +278,6 @@ void update_gist(arguments args, RestClient::HeaderFields headers) {
   http_send(headers, "PATCH", query, params.dump());
 }
 
-
 /** Searches gists by ID, filename, or date */
 void search_gist(arguments args, RestClient::HeaderFields headers) {
   // TODO: When stubbing the implementation for these functions, use prepared json files
@@ -286,5 +285,5 @@ void search_gist(arguments args, RestClient::HeaderFields headers) {
   auto res = send_req(con, "GET", GIST_ENDPOINT);
   auto json_res = nlohmann::json::parse(res.body);
   auto results = filter_gists(args, json_res);
-  show_results(results, false);
+  show_results(results, !args.raw);
 }
