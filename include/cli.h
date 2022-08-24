@@ -53,6 +53,7 @@ struct arguments {
   int verbose;
   bool priv;
   bool raw;
+  bool search_modified;
   char* config;
   Gist gist;
   RELTIME reltime;

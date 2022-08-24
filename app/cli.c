@@ -11,6 +11,7 @@ struct arguments set_default_args() {
   arguments.reltime = EXACT;
 
   arguments.args[1] = ""; // Default to null
+  arguments.search_modified = false;
   return arguments;
 }
 
@@ -61,10 +62,12 @@ error_t parse_opt (int key, char *arg, struct argp_state *state) {
 
     case 'c':
       arguments->gist.creation = arg;
+      arguments->search_modified = false;
       break;
 
     case 'm':
       arguments->gist.modified = arg;
+      arguments->search_modified = true;
       break;
 
     case 't':

@@ -134,11 +134,10 @@ std::vector<nlohmann::json> filter_gists(arguments args, nlohmann::json json_res
     case hash("date"): {
       auto reltime = args.reltime;
       auto date = args.gist.creation;
-      bool search_modified = false;
 
       SPDLOG_DEBUG("Creation Date: {}", date);
       auto tm = parse_datetime(date, GIST_DATE_FORMAT);
-      auto date_type = (search_modified) ? "updated_at" : "created_at";
+      auto date_type = (args.search_modified) ? "updated_at" : "created_at";
 
       for (auto gist: json_res) 
         results.push_back(search_date(gist, tm, date_type, reltime));
