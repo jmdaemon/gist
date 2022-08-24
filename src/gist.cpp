@@ -78,40 +78,6 @@ nlohmann::json get_json(RestClient::Connection* con, std::string query) {
   return result;
 }
 
-// Search
-/** Returns searched results as raw urls
-  TODO: Return nlohmann json object instead with the full objects instead. */
-//std::vector<std::string> search(nlohmann::json& res) {
-std::vector<nlohmann::json> search(nlohmann::json& res) {
-  auto files = res["files"];
-  //std::vector<std::string> results;
-  std::vector<nlohmann::json> results;
-
-  for (auto file: files) {
-      //SPDLOG_DEBUG("{}", file.dump(INDENT_LEVEL));
-      //std::string s = file["raw_url"];
-      //SPDLOG_DEBUG("{}", s);
-      //results.push_back(s);
-      results.push_back(file);
-  }
-  //std::for_each(files.begin(), files.end(),
-      //[results] (nlohmann::json& gist) mutable {
-        ////results.push_back(s);
-      //});
-
-
-  //std::for_each(files.begin(), files.end(),
-      //[results] (nlohmann::json& gist) mutable {
-        //SPDLOG_DEBUG("{}", gist.dump(INDENT_LEVEL));
-        //std::string s = gist["raw_url"];
-        //SPDLOG_DEBUG("{}", s);
-        ////results.push_back(unquote(s));
-        //results.push_back(s);
-        ////results.push_back(s);
-      //});
-  return results;
-}
-
 /** Parse arbitrary datetime strings
    e.g: 2021-07-14T02:10:41Z */
 std::tm parse_datetime(std::string datetime, std::string format) {
@@ -122,35 +88,26 @@ std::tm parse_datetime(std::string datetime, std::string format) {
 }
 
 /** Returns searched results if the gist date is later than the specified date */
-std::vector<nlohmann::json> search_date(nlohmann::json& res, std::string date, bool search_modified, RELTIME reltime) {
+std::vector<nlohmann::json> search_date(nlohmann::json& gist, std::tm tm, bool search_modified, RELTIME reltime) {
   std::vector<nlohmann::json> results;
   std::string date_type = (search_modified) ? "updated_at" : "created_at";
-  SPDLOG_DEBUG("Parsing Datetime: {}", date);
-  auto tm = parse_datetime(date, GIST_DATE_FORMAT);
-  SPDLOG_DEBUG("Datetime: {}", date);
 
-  auto gist = res;
-  // Loop through the http response
-  //for (auto gist : res) {
-    // Get the input datetimes
-    std::string gist_date = gist[date_type];
-    SPDLOG_DEBUG("Gist Date: {}", gist_date);
-    auto gist_tm = parse_datetime(gist_date, GIST_DATE_FORMAT);
-    
-    // Find the difference between the two dates 
-    auto d1 = std::mktime(&tm);
-    auto d2 = std::mktime(&gist_tm);
-    auto diff = difftime(d1, d2);
+  std::string gist_date = gist[date_type];
+  auto gist_tm = parse_datetime(gist_date, GIST_DATE_FORMAT);
+  
+  // Find the difference between the two dates 
+  auto d1 = std::mktime(&tm);
+  auto d2 = std::mktime(&gist_tm);
+  auto diff = difftime(d1, d2);
 
-    // Filter results according to reltime
-    if ((diff > 0) && (reltime == AFTER)) {
-      results.push_back(gist);
-    } else if ((diff == 0) && (reltime == EXACT)) {
-      results.push_back(gist);
-    } else if ((diff < 0) && reltime == BEFORE) {
-      results.push_back(gist);
-    }
-  //};
+  // Filter results according to reltime
+  if ((diff > 0) && (reltime == AFTER))
+    results.push_back(gist);
+  else if ((diff == 0) && (reltime == EXACT))
+    results.push_back(gist);
+  else if ((diff < 0) && reltime == BEFORE)
+    results.push_back(gist);
+
   return results;
 }
 
@@ -300,8 +257,7 @@ void show_results(std::vector<std::vector<nlohmann::json>> results, bool urls_on
   }
 }
 
-/** Searches gist by ID, filename, or date
-TODO: Add option to mass update gists by matching filename, or by dates */
+/** Searches gists by ID, filename, or date */
 void search_gist(arguments args, RestClient::HeaderFields headers) {
   // TODO: When stubbing the implementation for these functions, use prepared json files
   RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
@@ -313,51 +269,46 @@ void search_gist(arguments args, RestClient::HeaderFields headers) {
 
 /** Performs filtering by id, file name or date */
 std::vector<std::vector<nlohmann::json>> filter_gists(arguments args, nlohmann::json json_res) {
-  auto filter_type = args.args[1];
+  const char* filter_type = args.args[1];
   std::vector<std::vector<nlohmann::json>> results;
 
-  // Gist ID filtering
-  if (strcmp(filter_type, "id") == 0) {
-    auto id = std::string(args.gist.id);
-    SPDLOG_DEBUG("Gist ID: {}", id);
+  switch(hash(filter_type)) {
+    case hash("id"): { // Filter by id
+      auto id = std::string(args.gist.id);
+      SPDLOG_DEBUG("Gist ID: {}", id);
 
-    for (auto gist: json_res) {
-      if (gist["id"] == id) {
-        std::vector<nlohmann::json> container;
-        container.push_back(gist);
-        results.push_back(container);
-        break;
+      for (auto gist: json_res) {
+        if (gist["id"] == id) {
+          std::vector<nlohmann::json> container;
+          container.push_back(gist);
+          results.push_back(container);
+          break;
+        }
       }
     }
-  } else if (strcmp(filter_type, "name") == 0) {
-    auto fname = std::string(args.gist.filename);
-    SPDLOG_DEBUG("Filename: {}", fname);
+    case hash("name"): { // Filter by file name
+      auto fname = std::string(args.gist.filename);
+      SPDLOG_DEBUG("Filename: {}", fname);
 
-    for (auto gist: json_res)
-      for (auto file: gist)
-        if (file["filename"] == fname) 
-          results.push_back(gist);
-
-  } else if (strcmp(filter_type, "date") == 0) {
-    auto reltime = args.reltime;
-    auto date = args.gist.creation;
-    // Do creation date for now
-    SPDLOG_DEBUG("Creation Date: {}", date);
-
-    for (auto gist: json_res) {
-      //SPDLOG_DEBUG("Gist: {}", gist.dump(INDENT_LEVEL));
-      results.push_back(search_date(gist, date, false, reltime));
+      for (auto gist: json_res)
+        for (auto file: gist)
+          if (file["filename"] == fname) 
+            results.push_back(gist);
+      break;
     }
+    case hash("date"): {
+      auto reltime = args.reltime;
+      auto date = args.gist.creation;
+      SPDLOG_DEBUG("Creation Date: {}", date);
 
-    //for (auto gist: json_res) {
-    //}
-    //switch(reltime) {
-      //case AFTER: break;
-      //case BEFORE: break;
-      //case EXACT: break;
-    //}
-  } else {
+      auto tm = parse_datetime(date, GIST_DATE_FORMAT);
+      //SPDLOG_DEBUG("Datetime: {}", tm);
+
+      for (auto gist: json_res) {
+        results.push_back(search_date(gist, tm, false, reltime));
+      }
+      break;
+     }
   }
   return results;
 }
-

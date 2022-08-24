@@ -62,7 +62,7 @@ nlohmann::json get_json(RestClient::Connection* con, std::string query);
 
 // Gist search functions
 //std::vector<std::string> search(nlohmann::json& res);
-std::vector<nlohmann::json> search(nlohmann::json& res);
+//std::vector<nlohmann::json> search(nlohmann::json& res);
 std::vector<nlohmann::json> search_date(nlohmann::json& res, std::string date, bool search_modified, RELTIME reltime);
 nlohmann::json search_id(nlohmann::json& res, std::string id);
 std::vector<nlohmann::json> search_filename(nlohmann::json res, std::string file);
