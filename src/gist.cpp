@@ -243,20 +243,14 @@ void update_gist(arguments args, RestClient::HeaderFields headers) {
 }
 
 /** Show results */
-//void show_results(std::vector<std::vector<nlohmann::json>> results, bool urls_only) {
 void show_results(std::vector<nlohmann::json> gists, bool urls_only) {
+  auto show_urls = [](nlohmann::json &gist) { fmt::print("{}\n", gist["raw_url"]); };
+  auto show_json = [](nlohmann::json &gist) { fmt::print("{}\n", gist.dump(INDENT_LEVEL)); };
+  
   SPDLOG_DEBUG("Results:");
-  if (urls_only) {
-    for (auto gist: gists)
-        fmt::print("{}\n", gist["raw_url"]);
-      //for (auto gist : it)
-        //fmt::print("{}\n", gist["raw_url"]);
-  } else {
-    for (auto gist: gists)
-      fmt::print("{}\n", gist.dump(INDENT_LEVEL));
-      //for (auto gist : it)
-        //fmt::print("{}\n", gist.dump(INDENT_LEVEL));
-  }
+  (urls_only)
+    ? std::for_each(gists.begin(), gists.end(), show_urls)
+    : std::for_each(gists.begin(), gists.end(), show_json);
 }
 
 /** Searches gists by ID, filename, or date */
@@ -281,9 +275,6 @@ std::vector<nlohmann::json> filter_gists(arguments args, nlohmann::json json_res
 
       for (auto gist: json_res) {
         if (gist["id"] == id) {
-          //std::vector<nlohmann::json> container;
-          //container.push_back(gist);
-          //results.push_back(container);
           results.push_back(gist);
           break;
         }
@@ -291,8 +282,7 @@ std::vector<nlohmann::json> filter_gists(arguments args, nlohmann::json json_res
       break;
     }
     case hash("name"): { // Filter by file name
-      //auto fname = std::string(args.gist.filename);
-      std::string fname = std::string(args.gist.filename);
+      auto fname = std::string(args.gist.filename);
       SPDLOG_DEBUG("Filename: {}", fname);
 
       for (auto gist: json_res)
