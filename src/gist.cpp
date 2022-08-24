@@ -4,6 +4,8 @@ constexpr unsigned int hash(const char *s, int off = 0) {
     return !s[off] ? 5381 : (hash(s, off+1)*33) ^ s[off];
 }
 
+// Helper functions
+
 /** Parse gist config file for authentication token */
 std::tuple<std::string, std::string> parse_config(std::string path) {
   auto cfg   = toml::parse_file(path);
@@ -23,68 +25,6 @@ std::tuple<std::string, std::string> parse_config(std::string path) {
 
   return std::make_tuple(*token, *uname);
 }
-
-/** Form json requests for GitHub gists */
-nlohmann::json create_json(std::string fname, std::string conts, std::string desc, bool priv) {
-  nlohmann::json req;
-  req["description"] = desc;
-  req["public"] = !priv;
-  req["files"][fname]["content"] = conts;
-  return req;
-}
-
-/** Create request headers */
-RestClient::HeaderFields create_headers(std::string token) {
-  RestClient::HeaderFields headers;
-  headers["Accept"] = GITHUB_ACCEPT;
-  headers["Authorization"] = fmt::format("token {}", token);
-  return headers;
-}
-
-/** Initiate a connection to a url */
-RestClient::Connection* connect(std::string url, RestClient::HeaderFields* headers) {
-  RestClient::Connection* con = new RestClient::Connection(url);
-  con->FollowRedirects(true);
-  if (headers != nullptr) {
-    SPDLOG_DEBUG("Setting headers");
-    con->SetHeaders(*headers);
-  }
-  return con;
-}
-
-/** General purpose function to send http requests */
-RestClient::Response send_req(RestClient::Connection* con, std::string req_type, std::string query, std::string params) {
-  switch(hash(req_type.c_str())) {
-    case hash("GET")    : return con->get(query);
-    case hash("POST")   : return con->post(query, params);
-    case hash("DELETE") : return con->del(query);
-    case hash("PATCH")  : return con->patch(query, params);
-    default             : return RestClient::Response();
-  }
-}
-
-/** Returns searched results if the gist date is later than the specified date */
-nlohmann::json search_date(nlohmann::json& gist, std::tm tm, std::string date_type, RELTIME reltime) {
-  nlohmann::json result;
-  std::string gist_date = gist[date_type];
-  auto gist_tm = parse_datetime(gist_date, GIST_DATE_FORMAT);
-  
-  // Find the difference between the two dates 
-  auto d1 = std::mktime(&tm);
-  auto d2 = std::mktime(&gist_tm);
-  auto diff = difftime(d1, d2);
-
-  // Filter results according to reltime
-  if ((diff > 0) && (reltime == AFTER))
-    result = gist;
-  else if ((diff == 0) && (reltime == EXACT))
-    result = gist;
-  else if ((diff < 0) && reltime == BEFORE)
-    result = gist;
-  return result;
-}
-
-// Commands
 
 /** Log HTTP response information */
 void log_res(RestClient::Response res) {
@@ -119,6 +59,127 @@ void show_res(RestClient::Response res) {
     fmt::print("{}", json_res.dump(INDENT_LEVEL));
   }
 }
+
+/** Show filtered gist results */
+void show_results(std::vector<nlohmann::json> gists, bool urls_only) {
+  auto show_urls = [](nlohmann::json &gist) { fmt::print("{}\n", gist["raw_url"]); };
+  auto show_json = [](nlohmann::json &gist) { fmt::print("{}\n", gist.dump(INDENT_LEVEL)); };
+  
+  SPDLOG_DEBUG("Results:");
+  (urls_only)
+    ? std::for_each(gists.begin(), gists.end(), show_urls)
+    : std::for_each(gists.begin(), gists.end(), show_json);
+}
+
+// JSON
+
+/** Form json requests for GitHub gists */
+nlohmann::json create_json(std::string fname, std::string conts, std::string desc, bool priv) {
+  nlohmann::json req;
+  req["description"] = desc;
+  req["public"] = !priv;
+  req["files"][fname]["content"] = conts;
+  return req;
+}
+
+/** Returns searched results if the gist date is later than the specified date */
+nlohmann::json search_date(nlohmann::json& gist, std::tm tm, std::string date_type, RELTIME reltime) {
+  nlohmann::json result;
+  std::string gist_date = gist[date_type];
+  auto gist_tm = parse_datetime(gist_date, GIST_DATE_FORMAT);
+  
+  // Find the difference between the two dates 
+  auto d1 = std::mktime(&tm);
+  auto d2 = std::mktime(&gist_tm);
+  auto diff = difftime(d1, d2);
+
+  // Filter results according to reltime
+  if ((diff > 0) && (reltime == AFTER))
+    result = gist;
+  else if ((diff == 0) && (reltime == EXACT))
+    result = gist;
+  else if ((diff < 0) && reltime == BEFORE)
+    result = gist;
+  return result;
+}
+
+/** Performs filtering by id, file name or date */
+std::vector<nlohmann::json> filter_gists(arguments args, nlohmann::json json_res) {
+  const char* filter_type = args.args[1];
+  std::vector<nlohmann::json> results;
+
+  switch(hash(filter_type)) {
+    case hash("id"): { // Filter by id
+      auto id = std::string(args.gist.id);
+      SPDLOG_DEBUG("Gist ID: {}", id);
+
+      for (auto gist: json_res) {
+        if (gist["id"] == id) {
+          results.push_back(gist);
+          break;
+        }
+      }
+      break;
+    }
+    case hash("name"): { // Filter by file name
+      auto fname = std::string(args.gist.filename);
+      SPDLOG_DEBUG("Filename: {}", fname);
+
+      for (auto gist: json_res)
+        for (auto file: gist["files"])
+          if (file["filename"] == fname) 
+            results.push_back(gist);
+      break;
+    }
+    case hash("date"): {
+      auto reltime = args.reltime;
+      auto date = args.gist.creation;
+      bool search_modified = false;
+
+      SPDLOG_DEBUG("Creation Date: {}", date);
+      auto tm = parse_datetime(date, GIST_DATE_FORMAT);
+      auto date_type = (search_modified) ? "updated_at" : "created_at";
+
+      for (auto gist: json_res) 
+        results.push_back(search_date(gist, tm, date_type, reltime));
+      break;
+     }
+  }
+  return results;
+}
+// HTTP requests
+
+/** Create request headers */
+RestClient::HeaderFields create_headers(std::string token) {
+  RestClient::HeaderFields headers;
+  headers["Accept"] = GITHUB_ACCEPT;
+  headers["Authorization"] = fmt::format("token {}", token);
+  return headers;
+}
+
+/** Initiate a connection to a url */
+RestClient::Connection* connect(std::string url, RestClient::HeaderFields* headers) {
+  RestClient::Connection* con = new RestClient::Connection(url);
+  con->FollowRedirects(true);
+  if (headers != nullptr) {
+    SPDLOG_DEBUG("Setting headers");
+    con->SetHeaders(*headers);
+  }
+  return con;
+}
+
+/** General purpose function to send http requests */
+RestClient::Response send_req(RestClient::Connection* con, std::string req_type, std::string query, std::string params) {
+  switch(hash(req_type.c_str())) {
+    case hash("GET")    : return con->get(query);
+    case hash("POST")   : return con->post(query, params);
+    case hash("DELETE") : return con->del(query);
+    case hash("PATCH")  : return con->patch(query, params);
+    default             : return RestClient::Response();
+  }
+}
+
+// Gist commands
 
 /** List all gists found for the user */
 void list_gists(RestClient::HeaderFields headers) {
@@ -217,16 +278,6 @@ void update_gist(arguments args, RestClient::HeaderFields headers) {
   http_send(headers, "PATCH", query, params.dump());
 }
 
-/** Show results */
-void show_results(std::vector<nlohmann::json> gists, bool urls_only) {
-  auto show_urls = [](nlohmann::json &gist) { fmt::print("{}\n", gist["raw_url"]); };
-  auto show_json = [](nlohmann::json &gist) { fmt::print("{}\n", gist.dump(INDENT_LEVEL)); };
-  
-  SPDLOG_DEBUG("Results:");
-  (urls_only)
-    ? std::for_each(gists.begin(), gists.end(), show_urls)
-    : std::for_each(gists.begin(), gists.end(), show_json);
-}
 
 /** Searches gists by ID, filename, or date */
 void search_gist(arguments args, RestClient::HeaderFields headers) {
@@ -236,49 +287,4 @@ void search_gist(arguments args, RestClient::HeaderFields headers) {
   auto json_res = nlohmann::json::parse(res.body);
   auto results = filter_gists(args, json_res);
   show_results(results, false);
-}
-
-/** Performs filtering by id, file name or date */
-std::vector<nlohmann::json> filter_gists(arguments args, nlohmann::json json_res) {
-  const char* filter_type = args.args[1];
-  std::vector<nlohmann::json> results;
-
-  switch(hash(filter_type)) {
-    case hash("id"): { // Filter by id
-      auto id = std::string(args.gist.id);
-      SPDLOG_DEBUG("Gist ID: {}", id);
-
-      for (auto gist: json_res) {
-        if (gist["id"] == id) {
-          results.push_back(gist);
-          break;
-        }
-      }
-      break;
-    }
-    case hash("name"): { // Filter by file name
-      auto fname = std::string(args.gist.filename);
-      SPDLOG_DEBUG("Filename: {}", fname);
-
-      for (auto gist: json_res)
-        for (auto file: gist["files"])
-          if (file["filename"] == fname) 
-            results.push_back(gist);
-      break;
-    }
-    case hash("date"): {
-      auto reltime = args.reltime;
-      auto date = args.gist.creation;
-      bool search_modified = false;
-
-      SPDLOG_DEBUG("Creation Date: {}", date);
-      auto tm = parse_datetime(date, GIST_DATE_FORMAT);
-      auto date_type = (search_modified) ? "updated_at" : "created_at";
-
-      for (auto gist: json_res) 
-        results.push_back(search_date(gist, tm, date_type, reltime));
-      break;
-     }
-  }
-  return results;
 }
