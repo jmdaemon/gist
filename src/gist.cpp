@@ -288,3 +288,28 @@ void search_gist(arguments args, RestClient::HeaderFields headers) {
   auto results = filter_gists(args, json_res);
   show_results(results, !args.raw);
 }
+
+//void print_conts(RestClient::Connection* con, std::string raw_url) {
+void print_conts(std::string raw_url, RestClient::HeaderFields headers) {
+  RestClient::Connection* con = connect(raw_url, &headers);
+  auto res = send_req(con, "GET", raw_url);
+  fmt::print("{}\n", res.body);
+}
+
+
+/** Print gist to STDOUT */
+void show_gist(arguments args, RestClient::HeaderFields headers) {
+  auto id = std::string(args.gist.id);
+  SPDLOG_DEBUG("Gist ID: {}", id);
+  auto query = fmt::format("{}/{}", GIST_ENDPOINT, id);
+
+  RestClient::Connection* con = connect(GITHUB_API_URL, &headers);
+  auto res = send_req(con, "GET", query);
+  auto json_res = nlohmann::json::parse(res.body);
+
+  for (auto file: json_res["files"]) {
+    auto raw_url = file["raw_url"];
+    SPDLOG_DEBUG("raw_url: {}", raw_url);
+    print_conts(raw_url, headers);
+  }
+}

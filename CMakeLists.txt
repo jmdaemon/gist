@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19) # CMake 3.9
 
 project (gist
-    VERSION 1.2.2
+    VERSION 1.3.0
     DESCRIPTION "Github gists cli tool"
     LANGUAGES C CXX)
 
@@ -64,8 +64,6 @@ set(INCLUDES_DIR "${PROJECT_SOURCE_DIR}/include")
 set(HEADERS_VERSION "${PROJECT_BINARY_DIR}/include")
 
 # Add subdirectories
-#subdirs(resources src app)
-#add_subdirectory()
 subdirs(resources src app)
 
 if (BUILD_TESTING AND NOT USE_AS_SUBPROJECT)

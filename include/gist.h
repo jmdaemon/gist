@@ -64,6 +64,7 @@ RestClient::Response send_req(RestClient::Connection* con, std::string req_type,
 
 // Gist commands
 void list_gists(RestClient::HeaderFields headers);
+void show_gist(arguments args, RestClient::HeaderFields headers);
 void new_gist(arguments args, RestClient::HeaderFields headers);
 void create_gist(arguments args, RestClient::HeaderFields headers);
 void delete_gist(arguments args, RestClient::HeaderFields headers);

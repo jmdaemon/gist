@@ -56,6 +56,7 @@ int main(int argc, char** argv) {
 
   switch(hash(command)) {
     case hash("list"):    list_gists(headers); break;
+    case hash("show"):    show_gist(arguments, headers); break;
     case hash("new"):     new_gist(arguments, headers); break;
     case hash("create"):  create_gist(arguments, headers); break;
     case hash("delete"):  delete_gist(arguments, headers); break;
