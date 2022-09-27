@@ -2,6 +2,7 @@
 
 USE_JOLLY_SPDLOG_SETUP_LOGGER_FUNCTION
 USE_JOLLY_SPDLOG_SETUP_LOGGING_FUNCTION
+USE_JOLLY_SPDLOG_INIT_SPDLOG_DYNAMIC_LOGGING_FUNCTION
 
 int main(int argc, char** argv) {
   // Parse arguments
@@ -9,11 +10,7 @@ int main(int argc, char** argv) {
   argp_parse (&argp, argc, argv, 0, 0, &arguments);
   const char* command = arguments.args[0];
 
-  // Setup library logging
-  std::vector<spdlog::sink_ptr> sinks;
-  sinks.push_back(std::make_shared<spdlog::sinks::stdout_sink_st>());
-  auto logger = setup_logger(sinks);
-  setup_logging(arguments.verbose);
+  init_spdlog_dynamic_logging(arguments.verbose);
 
   // Set gist config file path
   std::string cfg = GIST_CONFIG_PATH;
