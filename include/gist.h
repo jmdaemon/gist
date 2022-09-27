@@ -31,6 +31,8 @@
 #include <restclient-cpp/connection.h>
 #include <restclient-cpp/restclient.h>
 
+USE_JOLLY_HASH_FUNCTION
+
 // Constants
 static const std::string logger_name = "gist";
 static const std::string logger_format = "[%Y-%m-%d %H.%M.%S.%e] [%^%l%$] [%s:%#] %v"; /* [2022-08-20 23:16:43.347] [debug] [app.cpp:3] Message! */
