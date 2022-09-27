@@ -19,6 +19,7 @@
 
 // Third Party Libraries
 #include <jolly.h>
+#include <jolly_spdlog.h>
 #include <toml++/toml.h>
 #include <nlohmann/json.hpp>
 #include <spdlog/logger.h>

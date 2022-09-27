@@ -1,30 +1,7 @@
 #include "gist.h"
 
-std::shared_ptr<spdlog::logger> setup_logger(std::vector<spdlog::sink_ptr> sinks) {
-  auto logger = spdlog::get(logger_name);
-  if (!logger) {
-    if (sinks.size() > 0) {
-        logger = std::make_shared<spdlog::logger>(logger_name, std::begin(sinks), std::end(sinks));
-        spdlog::register_logger(logger);
-    } else {
-        logger = spdlog::stdout_color_mt(logger_name);
-    }
-  }
-  return logger;
-}
-
-/* Enable/disable logging */
-void setup_logging(bool verbose) {
-  if (verbose == 1)
-    spdlog::set_level(spdlog::level::level_enum::trace);
-  else {
-    // Default to no logging
-    spdlog::set_level(spdlog::level::level_enum::off);
-    #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_NONE
-  }
-  spdlog::cfg::load_env_levels();
-  spdlog::set_pattern(logger_format);
-}
+USE_JOLLY_SPDLOG_SETUP_LOGGER_FUNCTION
+USE_JOLLY_SPDLOG_SETUP_LOGGING_FUNCTION
 
 int main(int argc, char** argv) {
   // Parse arguments
